@@ -1,0 +1,2346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>甜蜜时光 - 甜品店模拟经营</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 难度色调变量 */
+        :root {
+            --bg-primary: #FFE4E1;
+            --bg-secondary: #FFF0F5;
+            --bg-tertiary: #FFEFD5;
+            --shop-bg-start: #FFF8DC;
+            --shop-bg-end: #FFE4B5;
+            --shop-border: #DEB887;
+            --shop-shadow: rgba(139,69,19,0.1);
+            --panel-bg-start: #FFF5EE;
+            --panel-bg-end: #FFEFD5;
+            --panel-border: #DEB887;
+            --accent-color: #FF69B4;
+            --accent-secondary: #FF1493;
+            --status-bar-bg: linear-gradient(180deg, #D4A574 0%, #C49A6C 100%);
+            --status-bar-border: #A67B5B;
+        }
+
+        /* 困难模式 - 神秘紫色系 */
+        body.difficulty-hard {
+            --bg-primary: #E8E0F0;
+            --bg-secondary: #F0E8F5;
+            --bg-tertiary: #E8D8F0;
+            --shop-bg-start: #DCD0E8;
+            --shop-bg-end: #D0C0E0;
+            --shop-border: #9B7BB8;
+            --shop-shadow: rgba(75,0,130,0.15);
+            --panel-bg-start: #E8E0F0;
+            --panel-bg-end: #DDD0E8;
+            --panel-border: #9B7BB8;
+            --accent-color: #9370DB;
+            --accent-secondary: #8A2BE2;
+            --status-bar-bg: linear-gradient(180deg, #6B4B8C 0%, #5A3A7A 100%);
+            --status-bar-border: #4A2A6A;
+        }
+
+        /* 普通模式 - 经典甜品色系 */
+        body.difficulty-normal {
+            --bg-primary: #FFF5E6;
+            --bg-secondary: #FFF8F0;
+            --bg-tertiary: #FFEFD5;
+            --shop-bg-start: #FFF8DC;
+            --shop-bg-end: #FFE8C8;
+            --shop-border: #DAA520;
+            --shop-shadow: rgba(184,134,11,0.12);
+            --panel-bg-start: #FFF8F0;
+            --panel-bg-end: #FFEFD8;
+            --panel-border: #DAA520;
+            --accent-color: #FFA500;
+            --accent-secondary: #FF8C00;
+            --status-bar-bg: linear-gradient(180deg, #B8860B 0%, #A07008 100%);
+            --status-bar-border: #8B6914;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.8s ease;
+        }
+
+        /* 顶部状态栏 */
+        .status-bar {
+            background: var(--status-bar-bg);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-bottom: 3px solid var(--status-bar-border);
+            transition: background 0.8s ease, border-color 0.8s ease;
+        }
+
+        .status-bar h1 {
+            color: #FFF;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            min-width: 140px;
+        }
+
+        .status-bar h1::before {
+            content: '🍰 ';
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.95);
+            padding: 10px 18px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            color: #5D4037;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-size: 15px;
+        }
+
+        .stat-icon {
+            font-size: 22px;
+        }
+
+        /* 店铺等级 */
+        .shop-level {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #5D4037;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-size: 15px;
+        }
+
+        /* 难度选择器 */
+        .difficulty-selector {
+            display: flex;
+            gap: 3px;
+            background: rgba(255,255,255,0.3);
+            padding: 5px;
+            border-radius: 25px;
+        }
+
+        .diff-btn {
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s;
+            background: transparent;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .diff-btn:hover {
+            background: rgba(255,255,255,0.25);
+            color: white;
+        }
+
+        .diff-btn.active {
+            background: white;
+            color: #5D4037;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* 主游戏区域 */
+        .game-container {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+
+        /* 店铺场景 */
+        .shop-area {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .shop-title {
+            text-align: center;
+            font-size: 20px;
+            color: #8B4513;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 15px;
+        }
+
+        .shop-scene {
+            flex: 1;
+            background: linear-gradient(180deg, var(--shop-bg-start) 0%, var(--shop-bg-end) 100%);
+            border-radius: 20px;
+            border: 4px solid var(--shop-border);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px var(--shop-shadow);
+            min-height: 350px;
+            z-index: 1;
+            transition: background 0.8s ease, border-color 0.8s ease, box-shadow 0.8s ease;
+        }
+
+        /* 收银台 */
+        .counter {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 80px;
+            background: linear-gradient(180deg, #8B4513 0%, #654321 100%);
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
+        }
+
+        .counter::before {
+            content: '🧁';
+            position: absolute;
+            top: -20px;
+            font-size: 30px;
+        }
+
+        /* 座位区域 */
+        .seats {
+            position: absolute;
+            bottom: 90px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .seat {
+            width: 85px;
+            height: 85px;
+            background: linear-gradient(135deg, #F5F5DC 0%, #EEE8CD 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            border: 3px dashed #C4A67C;
+            position: relative;
+            transition: all 0.3s;
+            cursor: default;
+            box-sizing: border-box;
+            z-index: 11;
+        }
+
+        /* 空座位标识 */
+        .seat::after {
+            content: '空闲';
+            position: absolute;
+            bottom: 5px;
+            font-size: 10px;
+            color: #BDB76B;
+            font-weight: bold;
+        }
+
+        .seat.has-order {
+            cursor: pointer;
+            border-style: solid;
+            border-color: var(--accent-color);
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            box-shadow: 0 0 20px color-mix(in srgb, var(--accent-color) 50%, transparent), 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 移除空座位时的标识 */
+        .seat.has-order::after,
+        .seat.occupied::after {
+            content: '';
+        }
+
+        .seat:hover {
+            border-color: var(--accent-secondary);
+            box-shadow: 0 0 25px color-mix(in srgb, var(--accent-secondary) 60%, transparent), 0 6px 20px rgba(0,0,0,0.15);
+            transform: scale(1.08);
+        }
+
+        .seat.occupied:hover {
+            border-color: var(--accent-secondary);
+            box-shadow: 0 0 30px color-mix(in srgb, var(--accent-secondary) 70%, transparent), 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .seat.clickable {
+            border-style: solid;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 20px color-mix(in srgb, var(--accent-color) 50%, transparent), 0 4px 15px rgba(0,0,0,0.1);
+            animation: clickablePulse 1.2s infinite;
+        }
+
+        @keyframes clickablePulse {
+            0%, 100% { box-shadow: 0 0 15px color-mix(in srgb, var(--accent-color) 40%, transparent), 0 4px 15px rgba(0,0,0,0.1); }
+            50% { box-shadow: 0 0 35px color-mix(in srgb, var(--accent-color) 80%, transparent), 0 4px 15px rgba(0,0,0,0.1); }
+        }
+
+        .seat.new-seat {
+            animation: seatAppear 0.5s ease-out;
+        }
+
+        @keyframes seatAppear {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .seat.occupied {
+            background: linear-gradient(135deg, #FFE4E1 0%, #FFDAB9 100%);
+            border-style: solid;
+            border-color: #FFB6C1;
+        }
+
+        .seat .customer {
+            position: absolute;
+            font-size: 38px;
+            animation: bounce 1s infinite;
+        }
+
+        .seat.angry .customer {
+            animation: angry 0.15s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes angry {
+            0%, 100% { transform: translateX(0) rotate(0); }
+            25% { transform: translateX(-6px) rotate(-10deg); }
+            75% { transform: translateX(6px) rotate(10deg); }
+        }
+
+        /* 上菜成功光效 */
+        .seat.served-success {
+            animation: serveFlash 0.5s ease-out;
+        }
+
+        @keyframes serveFlash {
+            0% { box-shadow: 0 0 0 0 rgba(255,215,0,0.8); }
+            50% { box-shadow: 0 0 40px 10px rgba(255,215,0,0.6); background: linear-gradient(135deg, #FFFACD 0%, #FFE4B5 100%); }
+            100% { box-shadow: 0 0 15px rgba(255,105,180,0.3); }
+        }
+
+        /* 等待区 - 更醒目的设计 */
+        .waiting-area {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #FFF8DC 0%, #FFFACD 100%);
+            padding: 12px 15px;
+            border-radius: 15px;
+            border: 3px solid #DAA520;
+            min-width: 110px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .waiting-area h4 {
+            color: #8B4513;
+            margin-bottom: 10px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .waiting-area h4::before {
+            content: '🔔';
+            font-size: 16px;
+        }
+
+        .waiting-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 45px;
+            justify-content: center;
+        }
+
+        .waiting-customer {
+            font-size: 30px;
+            animation: pulse 1.5s infinite;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.95); }
+        }
+
+        /* 顾客订单气泡 */
+        .order-bubble {
+            position: absolute;
+            top: -18px;
+            right: -18px;
+            background: linear-gradient(135deg, #FFF 0%, #FFF5EE 100%);
+            border: 3px solid #FF69B4;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 3px 12px rgba(255,105,180,0.4), 0 2px 4px rgba(0,0,0,0.1);
+            animation: float 2s infinite;
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        .order-bubble.urgent {
+            border-color: #FF4500;
+            background: linear-gradient(135deg, #FFF0F0 0%, #FFE4E1 100%);
+            animation: urgent 0.4s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-4px) rotate(5deg); }
+        }
+
+        @keyframes urgent {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* 倒计时条 - 更醒目的设计 */
+        .timer-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+        }
+
+        .timer-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #32CD32 0%, #7CFC00 50%, #FFD700 75%, #FF6347 90%, #FF4500 100%);
+            transition: width 0.1s linear;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .timer-bar-fill.warning {
+            background: linear-gradient(90deg, #FFD700 0%, #FFA500 50%, #FF6347 100%);
+        }
+
+        .timer-bar-fill.danger {
+            background: linear-gradient(90deg, #FF4500 0%, #FF0000 100%);
+            animation: timerPulse 0.3s infinite;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* 菜品提示 - 更醒目的设计 */
+        .food-needed {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-secondary) 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            white-space: nowrap;
+            cursor: pointer;
+            box-shadow: 0 3px 10px color-mix(in srgb, var(--accent-color) 40%, transparent), 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 15;
+            animation: foodNeededPulse 1.5s infinite;
+        }
+
+        @keyframes foodNeededPulse {
+            0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 3px 10px color-mix(in srgb, var(--accent-color) 40%, transparent); }
+            50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 5px 20px color-mix(in srgb, var(--accent-color) 60%, transparent); }
+        }
+
+        .food-needed.urgent {
+            background: linear-gradient(135deg, #FF4500 0%, #FF0000 100%);
+            animation: urgentText 0.4s infinite;
+            font-size: 14px;
+        }
+
+        @keyframes urgentText {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.15); }
+        }
+
+        /* 右侧面板 */
+        .side-panel {
+            width: 320px;
+            background: linear-gradient(180deg, var(--panel-bg-start) 0%, var(--panel-bg-end) 100%);
+            border-left: 3px solid var(--panel-border);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            transition: background 0.8s ease, border-color 0.8s ease;
+        }
+
+        .panel-section {
+            background: white;
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid rgba(222,184,135,0.3);
+        }
+
+        .panel-section h3 {
+            color: #8B4513;
+            margin-bottom: 14px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #FFE4E1;
+            padding-bottom: 10px;
+        }
+
+        /* 菜品菜单 */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .menu-item {
+            background: linear-gradient(145deg, #FFF0F5 0%, #FFE4E1 100%);
+            border-radius: 15px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .menu-item:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 20px rgba(255,105,180,0.25);
+        }
+
+        .menu-item.selected {
+            border-color: var(--accent-color);
+            background: linear-gradient(145deg, color-mix(in srgb, var(--accent-color) 30%, white) 0%, color-mix(in srgb, var(--accent-color) 20%, white) 100%);
+            box-shadow: 0 4px 15px color-mix(in srgb, var(--accent-color) 35%, transparent);
+        }
+
+        .menu-item.locked {
+            opacity: 0.45;
+            cursor: not-allowed;
+            filter: grayscale(0.3);
+        }
+
+        .menu-item.just-unlocked {
+            animation: unlockFlash 1s ease-out;
+        }
+
+        @keyframes unlockFlash {
+            0% { transform: scale(1.5); opacity: 0; }
+            50% { transform: scale(1.1); background: linear-gradient(145deg, #FFD700 0%, #FFA500 100%); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .menu-item .emoji {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 6px;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
+        }
+
+        .menu-item .name {
+            font-size: 13px;
+            color: #8B4513;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .menu-item .price {
+            font-size: 12px;
+            color: #DAA520;
+            font-weight: bold;
+        }
+
+        .menu-item .lock-icon {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 16px;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        }
+
+        .menu-item .level-req {
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #666;
+            background: rgba(255,255,255,0.9);
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        /* 雇员区域 */
+        .employee-section {
+            background: linear-gradient(135deg, #E6E6FA 0%, #D8BFD8 100%);
+        }
+
+        .employee-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .employee {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(255,255,255,0.85);
+            border-radius: 12px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .employee.is-working {
+            border-color: #32CD32;
+            background: linear-gradient(135deg, #F0FFF0 0%, #E8F5E8 100%);
+            animation: employeeWorking 1s infinite;
+        }
+
+        @keyframes employeeWorking {
+            0%, 100% { box-shadow: 0 0 5px rgba(50,205,50,0.3); }
+            50% { box-shadow: 0 0 15px rgba(50,205,50,0.5); }
+        }
+
+        .employee-avatar {
+            font-size: 32px;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
+        }
+
+        .employee-info {
+            flex: 1;
+        }
+
+        .employee-name {
+            font-weight: bold;
+            color: #8B4513;
+            font-size: 14px;
+        }
+
+        .employee-status {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .employee-status.working {
+            color: #32CD32;
+            font-weight: bold;
+        }
+
+        .employee-serving-food {
+            font-size: 18px;
+            animation: serveBounce 0.5s infinite;
+        }
+
+        @keyframes serveBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .hire-btn {
+            background: linear-gradient(135deg, #9370DB 0%, #8A2BE2 100%);
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(138,43,226,0.3);
+        }
+
+        .hire-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(138,43,226,0.4);
+        }
+
+        .hire-btn:disabled {
+            background: linear-gradient(135deg, #CCC 0%, #AAA 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 升级商店 */
+        .upgrade-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .upgrade-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: linear-gradient(135deg, #FFEFD5 0%, #FFE4E1 100%);
+            border-radius: 10px;
+        }
+
+        .upgrade-icon {
+            font-size: 25px;
+        }
+
+        .upgrade-info {
+            flex: 1;
+        }
+
+        .upgrade-name {
+            font-weight: bold;
+            color: #8B4513;
+            font-size: 13px;
+        }
+
+        .upgrade-desc {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .upgrade-btn {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #5D4037;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .upgrade-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .upgrade-btn:disabled {
+            background: #CCC;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .upgrade-btn.maxed {
+            background: linear-gradient(135deg, #90EE90 0%, #32CD32 100%);
+        }
+
+        /* 通知提示 - 更醒目的设计 */
+        .notification {
+            position: fixed;
+            top: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-secondary) 100%);
+            color: white;
+            padding: 14px 30px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 15px;
+            box-shadow: 0 8px 30px color-mix(in srgb, var(--accent-secondary) 40%, transparent), 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            animation: slideDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), fadeOut 0.5s 2.5s forwards;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: background 0.8s ease;
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, #FF4500 0%, #DC143C 100%);
+            box-shadow: 0 8px 30px rgba(255,69,0,0.4), 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #32CD32 0%, #228B22 100%);
+            box-shadow: 0 8px 30px rgba(50,205,50,0.4), 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(-50px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateX(-50%) translateY(-25px); }
+        }
+
+        /* 金币动画 - 更华丽 */
+        .coin-animation {
+            position: fixed;
+            font-size: 28px;
+            animation: coinFly 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            pointer-events: none;
+            z-index: 1000;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        @keyframes coinFly {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            30% { opacity: 1; transform: scale(1.3) translateY(-30px); }
+            100% { opacity: 0; transform: scale(1.5) translateY(-120px); }
+        }
+
+        /* 生气离开动画 */
+        .angry-leave {
+            position: fixed;
+            font-size: 32px;
+            animation: angryLeave 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        @keyframes angryLeave {
+            0% { opacity: 1; transform: scale(1) translateX(0) rotate(0); }
+            30% { transform: scale(1.3) translateX(80px) rotate(15deg); }
+            100% { opacity: 0; transform: scale(0.3) translateX(300px) rotate(-20deg); }
+        }
+
+        /* 上菜成功粒子效果 */
+        .serve-particle {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 999;
+            animation: particleBurst 0.8s ease-out forwards;
+        }
+
+        @keyframes particleBurst {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0) translate(var(--tx), var(--ty)); }
+        }
+
+        /* 空状态提示 */
+        .empty-tip {
+            text-align: center;
+            color: #AAA;
+            padding: 20px;
+            font-size: 13px;
+        }
+
+        /* 雇员动画 */
+        .employee-working {
+            position: absolute;
+            font-size: 25px;
+            z-index: 1;
+            animation: employeeMove 2s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes employeeMove {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* 座位容量指示 */
+        .seat-counter {
+            text-align: center;
+            font-size: 12px;
+            color: #8B4513;
+            margin-top: 10px;
+        }
+
+        /* 成就按钮 */
+        .achievement-btn {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 3px 10px rgba(255,165,0,0.4);
+            transition: all 0.3s;
+            color: #5D4037;
+        }
+
+        .achievement-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,165,0,0.5);
+        }
+
+        .achievement-btn span:first-child {
+            font-size: 18px;
+        }
+
+        /* 成就面板 */
+        .achievement-panel {
+            position: fixed;
+            top: 80px;
+            right: -400px;
+            width: 380px;
+            max-height: calc(100vh - 100px);
+            background: linear-gradient(180deg, #FFFEF5 0%, #FFF8E7 100%);
+            border-radius: 20px;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.2);
+            z-index: 2000;
+            transition: right 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .achievement-panel.open {
+            right: 10px;
+        }
+
+        .achievement-header {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .achievement-header h3 {
+            color: #5D4037;
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .achievement-close {
+            background: rgba(255,255,255,0.3);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            color: #5D4037;
+            transition: all 0.3s;
+        }
+
+        .achievement-close:hover {
+            background: rgba(255,255,255,0.5);
+            transform: rotate(90deg);
+        }
+
+        .achievement-progress {
+            padding: 15px 20px;
+            background: rgba(255,215,0,0.1);
+            border-bottom: 2px solid rgba(255,215,0,0.3);
+        }
+
+        .achievement-progress span {
+            color: #8B4513;
+            font-size: 14px;
+        }
+
+        .achievement-progress-bar {
+            height: 10px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 5px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .achievement-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .achievement-list {
+            padding: 15px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .achievement-item.locked {
+            opacity: 0.6;
+            filter: grayscale(0.5);
+        }
+
+        .achievement-item.unlocked {
+            border-color: #FFD700;
+            background: linear-gradient(135deg, #FFFEF0 0%, #FFF8DC 100%);
+            box-shadow: 0 2px 10px rgba(255,215,0,0.2);
+        }
+
+        .achievement-item.just-unlocked {
+            animation: achievementUnlock 0.6s ease-out;
+        }
+
+        @keyframes achievementUnlock {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .achievement-icon {
+            font-size: 36px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #FFF8DC 0%, #FFE4B5 100%);
+            border-radius: 12px;
+        }
+
+        .achievement-item.locked .achievement-icon {
+            background: #E0E0E0;
+        }
+
+        .achievement-item.unlocked .achievement-icon {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            animation: iconGlow 2s infinite;
+        }
+
+        @keyframes iconGlow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.3); }
+            50% { box-shadow: 0 0 15px rgba(255,215,0,0.6); }
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-name {
+            font-weight: bold;
+            color: #5D4037;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .achievement-desc {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .achievement-reward {
+            font-size: 12px;
+            color: #FFA500;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        /* 成就进度显示 */
+        .achievement-progress-text {
+            font-size: 11px;
+            color: #888;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .achievement-progress-text .current {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .achievement-progress-bar-small {
+            height: 4px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .achievement-progress-bar-small .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .achievement-status {
+            font-size: 20px;
+        }
+
+        .achievement-item.locked .achievement-status {
+            filter: grayscale(1);
+            opacity: 0.4;
+        }
+
+        /* 成就达成弹窗 */
+        .achievement-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #FFFEF0 0%, #FFF8DC 100%);
+            border-radius: 25px;
+            padding: 30px 40px;
+            text-align: center;
+            z-index: 3000;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 4px solid #FFD700;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .achievement-popup.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .achievement-popup-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+            animation: popIcon 0.6s ease-out;
+        }
+
+        @keyframes popIcon {
+            0% { transform: scale(0) rotate(-20deg); }
+            60% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+
+        .achievement-popup-title {
+            color: #FFD700;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .achievement-popup-name {
+            color: #5D4037;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .achievement-popup-desc {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .achievement-popup-reward {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #5D4037;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        /* 背景遮罩 */
+        .achievement-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 1999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .achievement-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* 成就获得动画粒子 */
+        .achievement-particle {
+            position: fixed;
+            font-size: 24px;
+            pointer-events: none;
+            z-index: 3001;
+            animation: achievementParticle 1s ease-out forwards;
+        }
+
+        @keyframes achievementParticle {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(0.5) translateY(-100px); }
+        }
+    </style>
+</head>
+<body>
+        <!-- 状态栏 -->
+    <div class="status-bar">
+        <h1>甜蜜时光</h1>
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-icon">💰</span>
+                <span id="gold">0</span>
+            </div>
+            <div class="shop-level">
+                <span>⭐ Lv.<span id="level">1</span></span>
+            </div>
+            <div class="stat-item" id="customersLostStat" style="display: none;">
+                <span class="stat-icon">😠</span>
+                <span id="customersLost">0</span>
+            </div>
+            <button class="achievement-btn" id="achievementBtn" onclick="toggleAchievementPanel()">
+                <span>🏆</span>
+                <span id="achievementCount">0/17</span>
+            </button>
+            <div class="difficulty-selector">
+                <button class="diff-btn active" data-diff="easy" onclick="setDifficulty('easy')">😊简单</button>
+                <button class="diff-btn" data-diff="normal" onclick="setDifficulty('normal')">🤔普通</button>
+                <button class="diff-btn" data-diff="hard" onclick="setDifficulty('hard')">😰困难</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成就面板 -->
+    <div class="achievement-panel" id="achievementPanel">
+        <div class="achievement-header">
+            <h3>🏆 成就一览</h3>
+            <button class="achievement-close" onclick="toggleAchievementPanel()">×</button>
+        </div>
+        <div class="achievement-progress">
+            <span>已解锁: <strong id="achievementUnlocked">0</strong>/<span id="achievementTotal">17</span></span>
+            <div class="achievement-progress-bar">
+                <div class="achievement-progress-fill" id="achievementProgressFill"></div>
+            </div>
+        </div>
+        <div class="achievement-list" id="achievementList"></div>
+    </div>
+
+    <!-- 成就弹窗 -->
+    <div class="achievement-popup" id="achievementPopup">
+        <div class="achievement-popup-icon" id="popupIcon">🏆</div>
+        <div class="achievement-popup-title">🎉 成就达成!</div>
+        <div class="achievement-popup-name" id="popupName"></div>
+        <div class="achievement-popup-desc" id="popupDesc"></div>
+        <div class="achievement-popup-reward" id="popupReward"></div>
+    </div>
+
+    <!-- 遮罩层 -->
+    <div class="achievement-overlay" id="achievementOverlay" onclick="toggleAchievementPanel()"></div>
+
+    <!-- 主游戏区域 -->
+    <div class="game-container">
+        <!-- 店铺场景 -->
+        <div class="shop-area">
+            <div class="shop-title">🍰 欢迎光临甜蜜时光！点击顾客上菜 🍰</div>
+            <div class="shop-scene" id="shopScene">
+                <!-- 座位容器（动态生成） -->
+                <div class="seats" id="seats"></div>
+
+                <!-- 收银台 -->
+                <div class="counter">💵</div>
+
+                <!-- 等待区 -->
+                <div class="waiting-area">
+                    <h4>📋 待招待</h4>
+                    <div class="waiting-list" id="waitingList"></div>
+                </div>
+
+                <!-- 雇员工作区域 -->
+                <div id="employeeWorkingArea"></div>
+            </div>
+
+            <!-- 座位容量指示 -->
+            <div class="seat-counter" id="seatCounter"></div>
+        </div>
+
+        <!-- 右侧面板 -->
+        <div class="side-panel">
+            <!-- 菜品菜单 -->
+            <div class="panel-section">
+                <h3>🍰 菜品菜单</h3>
+                <div class="menu-grid" id="menuGrid"></div>
+            </div>
+
+            <!-- 雇员 -->
+            <div class="panel-section employee-section">
+                <h3>👥 雇员</h3>
+                <div class="employee-list" id="employeeList">
+                    <div class="empty-tip">还没有雇员，点击下方按钮雇佣~</div>
+                </div>
+                <button class="hire-btn" id="hireBtn" style="width: 100%; margin-top: 10px;">
+                    🧑‍🍳 雇佣店员 (200💰)
+                </button>
+            </div>
+
+            <!-- 升级 -->
+            <div class="panel-section">
+                <h3>⬆️ 升级</h3>
+                <div class="upgrade-list" id="upgradeList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ 游戏数据 ============
+        const gameData = {
+            gold: 50,
+            level: 1,
+            experience: 0,
+            customersServed: 0,
+            customersLost: 0,
+            maxSeats: 4,
+            baseMaxSeats: 4,
+            selectedFood: null,
+            customers: [],
+            waitingCustomers: [],
+            employees: [],
+            baseWaitTime: 15000, // 基础15秒等待时间
+            waitTimeLimit: 15000, // 实际等待时间（受难度和升级影响）
+            difficulty: 'normal', // 当前难度
+            difficultySettings: {
+                easy: { multiplier: 1.5, label: '简单', emoji: '😊' },
+                normal: { multiplier: 1.0, label: '普通', emoji: '🤔' },
+                hard: { multiplier: 0.6, label: '困难', emoji: '😰' }
+            },
+            menuItems: [
+                { id: 'cake', emoji: '🍰', name: '奶油蛋糕', price: 15, unlocked: true, minLevel: 1 },
+                { id: 'icecream', emoji: '🍦', name: '冰淇淋', price: 10, unlocked: true, minLevel: 1 },
+                { id: 'cookie', emoji: '🍪', name: '曲奇饼干', price: 8, unlocked: true, minLevel: 1 },
+                { id: 'macaron', emoji: '🧁', name: '马卡龙', price: 20, unlocked: false, minLevel: 2 },
+                { id: 'pudding', emoji: '🍮', name: '布丁', price: 18, unlocked: false, minLevel: 2 },
+                { id: 'milkshake', emoji: '🥛', name: '奶昔', price: 22, unlocked: false, minLevel: 3 },
+                { id: 'tart', emoji: '🥧', name: '水果挞', price: 25, unlocked: false, minLevel: 4 },
+                { id: 'parfait', emoji: '🍓', name: '草莓圣代', price: 30, unlocked: false, minLevel: 5 }
+            ],
+            upgrades: [
+                { id: 'capacity', emoji: '🪑', name: '增加座位', desc: '+1 座位容量', cost: 100, maxLevel: 5, currentLevel: 0 },
+                { id: 'customerRate', emoji: '📈', name: '吸引顾客', desc: '顾客来得更快', cost: 150, maxLevel: 5, currentLevel: 0 },
+                { id: 'tipRate', emoji: '💝', name: '小费加成', desc: '+10% 金币收益', cost: 200, maxLevel: 3, currentLevel: 0 },
+                { id: 'patience', emoji: '⏱️', name: '耐心培训', desc: '+3秒等待时间', cost: 180, maxLevel: 3, currentLevel: 0 },
+                { id: 'employeeSpeed', emoji: '🚀', name: '员工效率', desc: '员工服务更快', cost: 250, maxLevel: 3, currentLevel: 0 }
+            ],
+            customerAvatars: ['😊', '🙂', '😄', '🥰', '😋', '🤗', '😎', '🧐', '👩', '👨', '👧', '👦', '🧑', '👵', '👴'],
+            angryAvatars: ['😠', '😤', '😡', '🤬', '💢'],
+            employeeAvatars: ['🧑‍🍳', '👨‍🍳', '👩‍🍳', '🧑‍🍳', '👨‍🍳'],
+            employeeNames: ['小甜甜', '奶油', '糖糖', '果果', '蜜蜜'],
+            // 成就系统
+            achievements: [
+                // 服务类
+                { id: 'serve_10', emoji: '🍽️', name: '初出茅庐', desc: '服务10位顾客', target: 10, type: 'serve', reward: 50, unlocked: false },
+                { id: 'serve_50', emoji: '🥗', name: '小有名气', desc: '服务50位顾客', target: 50, type: 'serve', reward: 150, unlocked: false },
+                { id: 'serve_100', emoji: '🏆', name: '服务之星', desc: '服务100位顾客', target: 100, type: 'serve', reward: 300, unlocked: false },
+                { id: 'serve_500', emoji: '👑', name: '传奇店主', desc: '服务500位顾客', target: 500, type: 'serve', reward: 1000, unlocked: false },
+                // 金币类
+                { id: 'gold_500', emoji: '💰', name: '小有积蓄', desc: '累计获得500金币', target: 500, type: 'gold', reward: 80, unlocked: false },
+                { id: 'gold_2000', emoji: '💎', name: '富甲一方', desc: '累计获得2000金币', target: 2000, type: 'gold', reward: 200, unlocked: false },
+                { id: 'gold_10000', emoji: '🪙', name: '亿万富翁', desc: '累计获得10000金币', target: 10000, type: 'gold', reward: 500, unlocked: false },
+                // 等级类
+                { id: 'level_5', emoji: '⭐', name: '崭露头角', desc: '达到5级', target: 5, type: 'level', reward: 100, unlocked: false },
+                { id: 'level_10', emoji: '🌟', name: '声名远扬', desc: '达到10级', target: 10, type: 'level', reward: 300, unlocked: false },
+                { id: 'level_20', emoji: '✨', name: '大师级', desc: '达到20级', target: 20, type: 'level', reward: 800, unlocked: false },
+                // 完美服务类
+                { id: 'perfect_10', emoji: '💯', name: '零失误', desc: '连续服务10位顾客不失手', target: 10, type: 'perfect', reward: 120, unlocked: false },
+                { id: 'perfect_50', emoji: '🎯', name: '精准无误', desc: '连续服务50位顾客不失手', target: 50, type: 'perfect', reward: 400, unlocked: false },
+                // 雇员类
+                { id: 'employee_1', emoji: '👤', name: '招兵买马', desc: '雇佣第一位员工', target: 1, type: 'employee', reward: 100, unlocked: false },
+                { id: 'employee_3', emoji: '👥', name: '团队壮大', desc: '雇佣满3位员工', target: 3, type: 'employee', reward: 300, unlocked: false },
+                // 单次收益类
+                { id: 'single_50', emoji: '💵', name: '大丰收', desc: '单次服务获得50+金币', target: 50, type: 'singleGold', reward: 100, unlocked: false },
+                { id: 'single_100', emoji: '💸', name: '日进斗金', desc: '单次服务获得100+金币', target: 100, type: 'singleGold', reward: 250, unlocked: false },
+                // 耐心类
+                { id: 'patience_0', emoji: '🌸', name: '完美服务', desc: '一整天没有流失顾客', target: 1, type: 'dayPerfect', reward: 200, unlocked: false }
+            ],
+            totalGoldEarned: 0,
+            currentStreak: 0,
+            bestStreak: 0,
+            sessionCustomersLost: 0
+        };
+
+        // ============ 游戏状态 ============
+        let customerSpawnInterval;
+        let customerTimerInterval;
+        let employeeWorkInterval;
+        let newlyUnlockedItems = [];
+
+        // ============ 难度设置 ============
+        function setDifficulty(diff) {
+            if (!gameData.difficultySettings[diff]) return;
+
+            gameData.difficulty = diff;
+            const patienceLevel = gameData.upgrades.find(u => u.id === 'patience').currentLevel;
+            const patienceBonus = patienceLevel * 3000; // 耐心培训加成
+
+            // 计算最终等待时间
+            gameData.waitTimeLimit = (gameData.baseWaitTime + patienceBonus) * gameData.difficultySettings[diff].multiplier;
+
+            // 切换色调
+            document.body.classList.remove('difficulty-easy', 'difficulty-normal', 'difficulty-hard');
+            document.body.classList.add(`difficulty-${diff}`);
+
+            // 更新按钮样式
+            document.querySelectorAll('.diff-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.diff === diff);
+            });
+
+            // 根据难度显示不同的提示
+            const difficultyMessages = {
+                easy: '轻松愉快，好好赚钱~ 🌸',
+                normal: '保持节奏，别让顾客等太久~ ⭐',
+                hard: '挑战极限，你能行！💪'
+            };
+
+            showNotification(`${gameData.difficultySettings[diff].emoji} 已切换到${gameData.difficultySettings[diff].label}模式！${difficultyMessages[diff]}`);
+        }
+
+        function updateWaitTime() {
+            const patienceLevel = gameData.upgrades.find(u => u.id === 'patience').currentLevel;
+            const patienceBonus = patienceLevel * 3000;
+            gameData.waitTimeLimit = (gameData.baseWaitTime + patienceBonus) * gameData.difficultySettings[gameData.difficulty].multiplier;
+        }
+
+        // ============ 初始化 ============
+        function init() {
+            renderSeats();
+            renderMenu();
+            renderUpgrades();
+            renderAchievements();
+            updateUI();
+            startCustomerSpawning();
+            startCustomerTimer();
+            setupEventListeners();
+            setupSeatClickHandler();
+            setDifficulty('easy'); // 默认简单难度
+
+            // 默认选中第一个已解锁的菜品
+            const firstUnlocked = gameData.menuItems.find(m => m.unlocked);
+            if (firstUnlocked) {
+                gameData.selectedFood = firstUnlocked.id;
+                renderMenu();
+            }
+        }
+
+        // ============ 座位渲染 ============
+        function renderSeats(animate = false) {
+            const seatsContainer = document.getElementById('seats');
+            const currentSeatCount = seatsContainer.querySelectorAll('.seat').length;
+
+            // 只在需要时添加新座位
+            for (let i = currentSeatCount; i < gameData.maxSeats; i++) {
+                const seat = document.createElement('div');
+                seat.className = 'seat new-seat';
+                seat.dataset.seat = i;
+                seatsContainer.appendChild(seat);
+            }
+
+            // 更新座位计数器
+            updateSeatCounter();
+        }
+
+        function updateSeatCounter() {
+            const counter = document.getElementById('seatCounter');
+            const occupied = gameData.customers.length;
+            counter.textContent = `🪑 座位: ${occupied}/${gameData.maxSeats}`;
+        }
+
+        // ============ UI 渲染 ============
+        function renderMenu() {
+            const grid = document.getElementById('menuGrid');
+            grid.innerHTML = '';
+
+            gameData.menuItems.forEach(item => {
+                const div = document.createElement('div');
+                const isNewlyUnlocked = newlyUnlockedItems.includes(item.id);
+                const isSelected = gameData.selectedFood === item.id;
+
+                div.className = `menu-item ${item.unlocked ? '' : 'locked'} ${isSelected ? 'selected' : ''} ${isNewlyUnlocked ? 'just-unlocked' : ''}`;
+
+                let levelReqText = '';
+                if (!item.unlocked) {
+                    levelReqText = `<span class="level-req">需要 Lv.${item.minLevel}</span>`;
+                }
+
+                div.innerHTML = `
+                    <span class="emoji">${item.emoji}</span>
+                    <span class="name">${item.name}</span>
+                    <span class="price">${item.price}💰</span>
+                    ${!item.unlocked ? '<span class="lock-icon">🔒</span>' : ''}
+                    ${levelReqText}
+                `;
+
+                if (item.unlocked) {
+                    div.onclick = () => selectFood(item.id);
+                }
+
+                grid.appendChild(div);
+            });
+
+            // 清除新解锁标记
+            setTimeout(() => {
+                newlyUnlockedItems = [];
+            }, 1000);
+        }
+
+        function renderUpgrades() {
+            const list = document.getElementById('upgradeList');
+            list.innerHTML = '';
+
+            gameData.upgrades.forEach(upgrade => {
+                const div = document.createElement('div');
+                div.className = 'upgrade-item';
+
+                const isMaxed = upgrade.currentLevel >= upgrade.maxLevel;
+                const cost = upgrade.cost * (upgrade.currentLevel + 1);
+                const nextCost = isMaxed ? 0 : cost;
+
+                div.innerHTML = `
+                    <span class="upgrade-icon">${upgrade.emoji}</span>
+                    <div class="upgrade-info">
+                        <div class="upgrade-name">${upgrade.name} (${upgrade.currentLevel}/${upgrade.maxLevel})</div>
+                        <div class="upgrade-desc">${upgrade.desc}</div>
+                    </div>
+                    <button class="upgrade-btn ${isMaxed ? 'maxed' : ''}"
+                            ${isMaxed || gameData.gold < nextCost ? 'disabled' : ''}
+                            data-upgrade="${upgrade.id}">
+                        ${isMaxed ? '已满级' : `${nextCost}💰`}
+                    </button>
+                `;
+
+                if (!isMaxed) {
+                    div.querySelector('button').onclick = () => purchaseUpgrade(upgrade.id);
+                }
+
+                list.appendChild(div);
+            });
+        }
+
+        function renderEmployees() {
+            const list = document.getElementById('employeeList');
+
+            if (gameData.employees.length === 0) {
+                list.innerHTML = '<div class="empty-tip">还没有雇员，点击下方按钮雇佣~</div>';
+                return;
+            }
+
+            list.innerHTML = '';
+            gameData.employees.forEach((emp, index) => {
+                const div = document.createElement('div');
+                div.className = `employee ${emp.isWorking ? 'is-working' : ''}`;
+                div.innerHTML = `
+                    <span class="employee-avatar">${emp.avatar}</span>
+                    <div class="employee-info">
+                        <div class="employee-name">${emp.name}</div>
+                        <div class="employee-status ${emp.isWorking ? 'working' : ''}">
+                            ${emp.isWorking ? '🟢 服务顾客中...' : '🔵 等待顾客'}
+                        </div>
+                    </div>
+                    ${emp.isWorking ? '<span class="employee-serving-food">🍽️</span>' : ''}
+                `;
+                list.appendChild(div);
+            });
+
+            // 更新雇佣按钮
+            const hireBtn = document.getElementById('hireBtn');
+            hireBtn.disabled = gameData.gold < 200 || gameData.employees.length >= 3;
+            hireBtn.textContent = gameData.employees.length >= 3 ? '👥 已达上限' : `🧑‍🍳 雇佣店员 (200💰)`;
+        }
+
+        function renderWaitingArea() {
+            const waitingList = document.getElementById('waitingList');
+            waitingList.innerHTML = '';
+
+            gameData.waitingCustomers.forEach((customer, index) => {
+                const span = document.createElement('span');
+                span.className = 'waiting-customer';
+                span.textContent = customer.avatar;
+                span.title = `顾客${index + 1}`;
+                waitingList.appendChild(span);
+            });
+        }
+
+        // 等待区顾客超时检查
+        function checkWaitingCustomers() {
+            if (gameData.waitingCustomers.length === 0) return;
+
+            const maxWaitTime = gameData.waitTimeLimit * 1.5; // 等待时间是堂食的1.5倍
+            const now = Date.now();
+
+            gameData.waitingCustomers = gameData.waitingCustomers.filter(customer => {
+                if (now - customer.arrived > maxWaitTime) {
+                    showNotification(`${customer.avatar} 等待太久，离开了！`, true);
+                    return false;
+                }
+                return true;
+            });
+
+            renderWaitingArea();
+        }
+
+        // ============ 成就系统 ============
+        function toggleAchievementPanel() {
+            const panel = document.getElementById('achievementPanel');
+            const overlay = document.getElementById('achievementOverlay');
+            panel.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        function getAchievementProgress(achievement) {
+            // 计算成就当前进度
+            let current = 0;
+            let showProgress = true;
+
+            switch (achievement.type) {
+                case 'serve':
+                    current = Math.min(gameData.customersServed, achievement.target);
+                    break;
+                case 'gold':
+                    current = Math.min(gameData.totalGoldEarned, achievement.target);
+                    break;
+                case 'level':
+                    current = Math.min(gameData.level, achievement.target);
+                    break;
+                case 'perfect':
+                    // 完美服务成就使用当前连续数（会因为流失顾客而重置）
+                    current = Math.min(gameData.currentStreak, achievement.target);
+                    break;
+                case 'employee':
+                    current = Math.min(gameData.employees.length, achievement.target);
+                    break;
+                case 'singleGold':
+                    // 单次金币成就 - 不显示进度（瞬时达成）
+                    showProgress = false;
+                    break;
+                case 'dayPerfect':
+                    // 完美服务成就 - 显示已服务顾客数作为参考
+                    showProgress = false;
+                    break;
+                default:
+                    showProgress = false;
+            }
+
+            return { current, showProgress };
+        }
+
+        function renderAchievements() {
+            const list = document.getElementById('achievementList');
+            const total = gameData.achievements.length;
+            const unlocked = gameData.achievements.filter(a => a.unlocked).length;
+
+            // 更新计数
+            document.getElementById('achievementCount').textContent = `${unlocked}/${total}`;
+            document.getElementById('achievementUnlocked').textContent = unlocked;
+            document.getElementById('achievementTotal').textContent = total;
+
+            // 更新进度条
+            const progressFill = document.getElementById('achievementProgressFill');
+            progressFill.style.width = `${(unlocked / total) * 100}%`;
+
+            // 渲染成就列表
+            list.innerHTML = '';
+            gameData.achievements.forEach(achievement => {
+                const div = document.createElement('div');
+                div.className = `achievement-item ${achievement.unlocked ? 'unlocked' : 'locked'}`;
+                div.id = `achievement-${achievement.id}`;
+
+                const { current, showProgress } = getAchievementProgress(achievement);
+                const progressPercent = achievement.target > 0 ? Math.min((current / achievement.target) * 100, 100) : 0;
+
+                // 构建进度显示HTML
+                let progressHTML = '';
+                if (showProgress && !achievement.unlocked) {
+                    progressHTML = `
+                        <div class="achievement-progress-text">
+                            <span class="current">${current}</span>/${achievement.target}
+                        </div>
+                        <div class="achievement-progress-bar-small">
+                            <div class="fill" style="width: ${progressPercent}%"></div>
+                        </div>
+                    `;
+                } else if (achievement.unlocked) {
+                    progressHTML = `<div class="achievement-progress-text" style="color: #32CD32;">✨ 已完成</div>`;
+                }
+
+                div.innerHTML = `
+                    <div class="achievement-icon">${achievement.emoji}</div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">${achievement.name}</div>
+                        <div class="achievement-desc">${achievement.desc}</div>
+                        ${progressHTML}
+                        ${achievement.unlocked ? `<div class="achievement-reward">+${achievement.reward}💰 已领取</div>` : `<div class="achievement-reward">奖励: ${achievement.reward}💰</div>`}
+                    </div>
+                    <div class="achievement-status">${achievement.unlocked ? '✅' : '🔒'}</div>
+                `;
+
+                list.appendChild(div);
+            });
+        }
+
+        function checkAchievements() {
+            let newAchievements = [];
+
+            gameData.achievements.forEach(achievement => {
+                if (achievement.unlocked) return; // 跳过已解锁的
+
+                let progress = 0;
+                let reached = false;
+
+                switch (achievement.type) {
+                    case 'serve':
+                        progress = gameData.customersServed;
+                        reached = progress >= achievement.target;
+                        break;
+                    case 'gold':
+                        progress = gameData.totalGoldEarned;
+                        reached = progress >= achievement.target;
+                        break;
+                    case 'level':
+                        progress = gameData.level;
+                        reached = progress >= achievement.target;
+                        break;
+                    case 'perfect':
+                        progress = gameData.currentStreak;
+                        reached = progress >= achievement.target;
+                        break;
+                    case 'employee':
+                        progress = gameData.employees.length;
+                        reached = progress >= achievement.target;
+                        break;
+                    case 'singleGold':
+                        // 这个在serveCustomer中单独检查
+                        break;
+                    case 'dayPerfect':
+                        // 需要一整天没有流失顾客才算
+                        if (gameData.sessionCustomersLost === 0 && gameData.customersServed >= 10) {
+                            reached = true;
+                        }
+                        break;
+                }
+
+                if (reached) {
+                    unlockAchievement(achievement);
+                    newAchievements.push(achievement);
+                }
+            });
+
+            return newAchievements;
+        }
+
+        function unlockAchievement(achievement) {
+            if (achievement.unlocked) return;
+
+            achievement.unlocked = true;
+            gameData.gold += achievement.reward;
+            gameData.totalGoldEarned += achievement.reward;
+
+            // 更新UI
+            renderAchievements();
+            updateUI();
+
+            // 显示成就弹窗
+            showAchievementPopup(achievement);
+
+            // 在成就面板中高亮显示
+            setTimeout(() => {
+                const item = document.getElementById(`achievement-${achievement.id}`);
+                if (item) {
+                    item.classList.add('just-unlocked');
+                    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+
+            showNotification(`🏆 解锁成就: ${achievement.name}！+${achievement.reward}💰`, false, 'success');
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const overlay = document.getElementById('achievementOverlay');
+
+            document.getElementById('popupIcon').textContent = achievement.emoji;
+            document.getElementById('popupName').textContent = achievement.name;
+            document.getElementById('popupDesc').textContent = achievement.desc;
+            document.getElementById('popupReward').textContent = `+${achievement.reward}💰`;
+
+            popup.classList.add('show');
+            overlay.classList.add('show');
+
+            // 创建庆祝粒子
+            createAchievementParticles();
+
+            // 3秒后自动关闭
+            setTimeout(() => {
+                popup.classList.remove('show');
+                setTimeout(() => {
+                    overlay.classList.remove('show');
+                }, 300);
+            }, 2500);
+        }
+
+        function createAchievementParticles() {
+            const emojis = ['✨', '⭐', '🌟', '💫', '🎉', '🎊'];
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'achievement-particle';
+                particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                particle.style.left = `${30 + Math.random() * 40}%`;
+                particle.style.top = `${40 + Math.random() * 20}%`;
+                particle.style.animationDelay = `${Math.random() * 0.5}s`;
+                document.body.appendChild(particle);
+
+                setTimeout(() => particle.remove(), 1500);
+            }
+        }
+
+        function checkSingleGoldAchievement(amount) {
+            const achievement = gameData.achievements.find(a => a.id === 'single_50');
+            if (achievement && !achievement.unlocked && amount >= 50) {
+                unlockAchievement(achievement);
+            }
+
+            const achievement2 = gameData.achievements.find(a => a.id === 'single_100');
+            if (achievement2 && !achievement2.unlocked && amount >= 100) {
+                unlockAchievement(achievement2);
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('gold').textContent = gameData.gold;
+            document.getElementById('level').textContent = gameData.level;
+
+            // 显示流失顾客计数
+            const lostStat = document.getElementById('customersLostStat');
+            const lostCount = document.getElementById('customersLost');
+            if (gameData.customersLost > 0) {
+                lostStat.style.display = 'flex';
+                lostCount.textContent = gameData.customersLost;
+            }
+
+            renderMenu();
+            renderUpgrades();
+            renderEmployees();
+            renderWaitingArea();
+            updateSeats();
+        }
+
+        function updateSeats() {
+            // 使用精确的 data-seat 属性来匹配座位
+            for (let i = 0; i < gameData.maxSeats; i++) {
+                const seat = document.querySelector(`.seat[data-seat="${i}"]`);
+                if (!seat) continue;
+
+                seat.style.display = 'flex';
+                const customer = gameData.customers.find(c => c.seatIndex === i);
+
+                if (customer) {
+                    seat.classList.add('occupied');
+
+                    // 计算剩余时间
+                    const elapsed = Date.now() - customer.orderedAt;
+                    const remaining = gameData.waitTimeLimit - elapsed;
+                    const percentage = Math.max(0, (remaining / gameData.waitTimeLimit) * 100);
+                    const elapsedPercent = 100 - percentage;
+
+                    let timerClass = '';
+                    let bubbleClass = '';
+                    let foodNeededText = '点击上菜!';
+                    let foodNeededClass = '';
+
+                    // 生气阈值：进度条走过50%后开始生气
+                    if (elapsedPercent >= 50) {
+                        timerClass = 'danger';
+                        bubbleClass = 'urgent';
+                        foodNeededClass = 'urgent';
+                        foodNeededText = '快点!!';
+                        seat.classList.add('angry');
+                    } else {
+                        timerClass = elapsedPercent >= 30 ? 'warning' : '';
+                        seat.classList.remove('angry');
+                    }
+
+                    // 只有未服务的顾客才显示订单气泡
+                    if (!customer.served) {
+                        seat.innerHTML = `
+                            <span class="customer">${customer.avatar}</span>
+                            <div class="order-bubble ${bubbleClass}">${customer.orderEmoji}</div>
+                            <div class="food-needed ${foodNeededClass}">${foodNeededText}</div>
+                            <div class="timer-bar">
+                                <div class="timer-bar-fill ${timerClass}" style="width: ${percentage}%"></div>
+                            </div>
+                        `;
+                        seat.style.cursor = 'pointer';
+                        seat.classList.add('has-order');
+                    } else {
+                        // 已服务但还没离开
+                        seat.innerHTML = `<span class="customer">${customer.avatar}</span>`;
+                        seat.style.cursor = 'default';
+                        seat.classList.remove('has-order');
+                    }
+                } else {
+                    seat.classList.remove('occupied', 'angry', 'has-order');
+                    seat.style.cursor = 'default';
+                    seat.innerHTML = '';
+                }
+            }
+
+            // 隐藏超出最大座位数的座位
+            for (let i = gameData.maxSeats; i < 20; i++) {
+                const seat = document.querySelector(`.seat[data-seat="${i}"]`);
+                if (seat) seat.style.display = 'none';
+            }
+
+            updateSeatCounter();
+        }
+
+        // 座位点击处理
+        function setupSeatClickHandler() {
+            const seatsContainer = document.getElementById('seats');
+
+            // 使用 mousedown 事件（在 click 之前触发）
+            seatsContainer.onmousedown = (e) => {
+                const seat = e.target.closest('.seat');
+                if (!seat) return;
+
+                const seatIndex = parseInt(seat.dataset.seat);
+                if (isNaN(seatIndex)) return;
+
+                const customer = gameData.customers.find(c => c.seatIndex === seatIndex);
+                if (customer && !customer.served) {
+                    serveCustomer(seatIndex);
+                }
+            };
+        }
+
+        // ============ 游戏逻辑 ============
+        function selectFood(foodId) {
+            gameData.selectedFood = foodId;
+            renderMenu();
+        }
+
+        function serveCustomer(seatIndex) {
+            const customer = gameData.customers.find(c => c.seatIndex === seatIndex);
+
+            if (!customer || customer.served) return;
+
+            // 添加点击反馈 - 更强的光效
+            const seat = document.querySelector(`.seat[data-seat="${seatIndex}"]`);
+            if (seat) {
+                seat.classList.add('served-success');
+                // 添加粒子效果
+                createServeParticles(seat);
+                setTimeout(() => {
+                    seat.classList.remove('served-success');
+                }, 500);
+            }
+
+            // 清除超时计时器
+            if (customer.timeoutId) {
+                clearTimeout(customer.timeoutId);
+            }
+
+            // 如果没有选择菜品，随机选一个已解锁的
+            let food = gameData.menuItems.find(m => m.id === gameData.selectedFood);
+            if (!food || !food.unlocked) {
+                food = gameData.menuItems.find(m => m.unlocked);
+            }
+
+            if (!food) return;
+
+            // 上菜
+            customer.served = true;
+            customer.servedFood = food;
+
+            // 计算金币（考虑小费加成）
+            const tipBonus = 1 + (gameData.upgrades.find(u => u.id === 'tipRate').currentLevel * 0.1);
+            const goldEarned = Math.floor(food.price * tipBonus);
+
+            gameData.gold += goldEarned;
+            gameData.totalGoldEarned += goldEarned;
+            gameData.customersServed++;
+            gameData.experience += 10;
+            gameData.currentStreak++; // 连续服务计数+1
+            if (gameData.currentStreak > gameData.bestStreak) {
+                gameData.bestStreak = gameData.currentStreak;
+            }
+
+            // 检查升级
+            checkLevelUp();
+
+            // 检查成就
+            checkAchievements();
+            checkSingleGoldAchievement(goldEarned);
+
+            // 显示金币动画
+            showCoinAnimation(seatIndex, goldEarned);
+
+            // 顾客满意离开
+            setTimeout(() => {
+                removeCustomer(seatIndex, true);
+            }, 1000);
+
+            updateUI();
+            showNotification(`${customer.avatar} 满意离开！+${goldEarned}💰`, false, 'success');
+        }
+
+        // 创建上菜粒子效果
+        function createServeParticles(seat) {
+            const rect = seat.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const colors = ['#FFD700', '#FF69B4', '#FFA500', '#FF1493', '#32CD32'];
+
+            for (let i = 0; i < 12; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'serve-particle';
+                particle.style.left = `${centerX}px`;
+                particle.style.top = `${centerY}px`;
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+                const angle = (Math.PI * 2 * i) / 12;
+                const distance = 50 + Math.random() * 30;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                particle.style.setProperty('--tx', `${tx}px`);
+                particle.style.setProperty('--ty', `${ty}px`);
+
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 800);
+            }
+        }
+
+        function removeCustomer(seatIndex, wasSatisfied = false) {
+            gameData.customers = gameData.customers.filter(c => c.seatIndex !== seatIndex);
+
+            // 如果等待区有顾客，自动安排入座
+            if (gameData.waitingCustomers.length > 0) {
+                const nextCustomer = gameData.waitingCustomers.shift();
+                addCustomerToSeat(nextCustomer, seatIndex);
+            }
+
+            updateUI();
+        }
+
+        function addCustomerToSeat(customerData, seatIndex) {
+            const availableFoods = gameData.menuItems.filter(m => m.unlocked);
+            if (availableFoods.length === 0) return;
+
+            const order = availableFoods[Math.floor(Math.random() * availableFoods.length)];
+
+            const customer = {
+                avatar: customerData.avatar,
+                seatIndex: seatIndex,
+                order: order.id,
+                orderEmoji: order.emoji,
+                served: false,
+                orderedAt: Date.now(),
+                arrived: customerData.arrived || Date.now()
+            };
+
+            // 设置超时
+            customer.timeoutId = setTimeout(() => {
+                if (!customer.served && gameData.customers.includes(customer)) {
+                    customerLeaveAngry(seatIndex);
+                }
+            }, gameData.waitTimeLimit);
+
+            gameData.customers.push(customer);
+        }
+
+        function customerLeaveAngry(seatIndex) {
+            const customer = gameData.customers.find(c => c.seatIndex === seatIndex);
+            if (!customer || customer.served) return;
+
+            // 移除顾客
+            gameData.customers = gameData.customers.filter(c => c.seatIndex !== seatIndex);
+            gameData.customersLost++;
+            gameData.sessionCustomersLost++;
+            gameData.currentStreak = 0; // 重置连续服务计数
+
+            // 显示生气离开动画
+            showAngryLeaveAnimation(seatIndex, customer.avatar);
+
+            showNotification(`${customer.avatar} 等太久生气离开了！😠`, true);
+
+            // 从等待区补位
+            if (gameData.waitingCustomers.length > 0) {
+                const nextCustomer = gameData.waitingCustomers.shift();
+                addCustomerToSeat(nextCustomer, seatIndex);
+            }
+
+            updateUI();
+        }
+
+        function showAngryLeaveAnimation(seatIndex, avatar) {
+            const seat = document.querySelector(`[data-seat="${seatIndex}"]`);
+            if (!seat) return;
+
+            const rect = seat.getBoundingClientRect();
+            const angryEmoji = document.createElement('div');
+            angryEmoji.className = 'angry-leave';
+            angryEmoji.textContent = `${avatar} 💢`;
+            angryEmoji.style.left = `${rect.left}px`;
+            angryEmoji.style.top = `${rect.top}px`;
+            document.body.appendChild(angryEmoji);
+
+            setTimeout(() => angryEmoji.remove(), 1000);
+        }
+
+        function spawnCustomer() {
+            const availableSeats = [];
+            for (let i = 0; i < gameData.maxSeats; i++) {
+                if (!gameData.customers.find(c => c.seatIndex === i)) {
+                    availableSeats.push(i);
+                }
+            }
+
+            if (availableSeats.length === 0) {
+                // 没有座位，加入等待区
+                if (gameData.waitingCustomers.length < 5) {
+                    gameData.waitingCustomers.push({
+                        avatar: gameData.customerAvatars[Math.floor(Math.random() * gameData.customerAvatars.length)],
+                        arrived: Date.now()
+                    });
+                    renderWaitingArea();
+                }
+                return;
+            }
+
+            // 分配座位
+            const seatIndex = availableSeats[Math.floor(Math.random() * availableSeats.length)];
+            addCustomerToSeat({
+                avatar: gameData.customerAvatars[Math.floor(Math.random() * gameData.customerAvatars.length)]
+            }, seatIndex);
+
+            updateUI();
+        }
+
+        function startCustomerSpawning() {
+            const baseInterval = 4000;
+            const speedBonus = gameData.upgrades.find(u => u.id === 'customerRate').currentLevel * 0.1;
+            const interval = baseInterval * (1 - speedBonus);
+
+            if (customerSpawnInterval) clearInterval(customerSpawnInterval);
+            customerSpawnInterval = setInterval(spawnCustomer, Math.max(interval, 2000));
+
+            // 初始spawn
+            setTimeout(spawnCustomer, 1000);
+            setTimeout(spawnCustomer, 2000);
+        }
+
+        function startCustomerTimer() {
+            // 每100ms更新一次倒计时显示
+            if (customerTimerInterval) clearInterval(customerTimerInterval);
+            customerTimerInterval = setInterval(() => {
+                updateSeats();
+                checkWaitingCustomers(); // 检查等待区顾客超时
+            }, 100);
+        }
+
+        function purchaseUpgrade(upgradeId) {
+            const upgrade = gameData.upgrades.find(u => u.id === upgradeId);
+            if (!upgrade || upgrade.currentLevel >= upgrade.maxLevel) return;
+
+            const cost = upgrade.cost * (upgrade.currentLevel + 1);
+            if (gameData.gold < cost) return;
+
+            gameData.gold -= cost;
+            upgrade.currentLevel++;
+
+            // 应用升级效果
+            applyUpgradeEffect(upgrade);
+
+            showNotification(`🎉 ${upgrade.name} 升到 ${upgrade.currentLevel} 级！`);
+            updateUI();
+
+            // 重新设置顾客生成速度
+            startCustomerSpawning();
+        }
+
+        function applyUpgradeEffect(upgrade) {
+            switch (upgrade.id) {
+                case 'capacity':
+                    gameData.maxSeats = gameData.baseMaxSeats + upgrade.currentLevel;
+                    renderSeats(true); // 传入true表示添加动画
+                    break;
+                case 'patience':
+                    // 重新计算等待时间（考虑难度加成）
+                    updateWaitTime();
+                    break;
+                case 'employeeSpeed':
+                    // 重新启动雇员工作以应用新速度
+                    startEmployeeWork();
+                    break;
+            }
+        }
+
+        function checkLevelUp() {
+            const expNeeded = gameData.level * 50;
+
+            // 支持一次升多级
+            while (gameData.experience >= expNeeded) {
+                gameData.experience -= expNeeded;
+                gameData.level++;
+
+                // 解锁新菜品并记录
+                gameData.menuItems.forEach(item => {
+                    if (item.minLevel <= gameData.level && !item.unlocked) {
+                        item.unlocked = true;
+                        newlyUnlockedItems.push(item.id);
+                    }
+                });
+
+                const unlockedNames = newlyUnlockedItems
+                    .map(id => gameData.menuItems.find(m => m.id === id)?.name)
+                    .filter(Boolean)
+                    .join('、');
+
+                showNotification(`🎊 升级到 Lv.${gameData.level}！解锁: ${unlockedNames || '无新解锁'}！`);
+                newlyUnlockedItems = [];
+
+                // 检查等级相关成就
+                checkAchievements();
+            }
+            renderMenu();
+        }
+
+        function hireEmployee() {
+            if (gameData.gold < 200) return;
+
+            if (gameData.employees.length >= 3) {
+                showNotification('雇员数量已达上限！');
+                return;
+            }
+
+            gameData.gold -= 200;
+
+            const emp = {
+                avatar: gameData.employeeAvatars[gameData.employees.length % gameData.employeeAvatars.length],
+                name: gameData.employeeNames[gameData.employees.length % gameData.employeeNames.length],
+                isWorking: false
+            };
+
+            gameData.employees.push(emp);
+
+            showNotification(`🧑‍🍳 欢迎新雇员 ${emp.name}！`);
+            updateUI();
+
+            // 检查雇员相关成就
+            checkAchievements();
+
+            // 启动雇员工作
+            startEmployeeWork();
+        }
+
+        function startEmployeeWork() {
+            if (employeeWorkInterval) clearInterval(employeeWorkInterval);
+
+            const speedBonus = 1 + (gameData.upgrades.find(u => u.id === 'employeeSpeed')?.currentLevel * 0.3 || 0);
+            let isServing = false; // 防止重复触发
+
+            employeeWorkInterval = setInterval(() => {
+                if (gameData.employees.length === 0) return;
+                if (isServing) return; // 正在服务中，跳过
+
+                // 找一个未服务的顾客
+                const unservedCustomer = gameData.customers.find(c => !c.served && !c.isBeingServedBy);
+                if (unservedCustomer) {
+                    isServing = true;
+                    const employee = gameData.employees[0];
+                    employee.isWorking = true;
+                    unservedCustomer.isBeingServedBy = employee.name;
+                    renderEmployees(); // 更新雇员状态显示
+
+                    // 模拟上菜时间
+                    setTimeout(() => {
+                        const idx = gameData.customers.findIndex(c => c.seatIndex === unservedCustomer.seatIndex);
+                        if (idx !== -1 && !gameData.customers[idx].served) {
+                            serveCustomer(unservedCustomer.seatIndex);
+                        }
+                        // 服务完成，重置状态
+                        employee.isWorking = false;
+                        isServing = false;
+                        renderEmployees();
+                    }, 2000 / speedBonus);
+                }
+            }, 3000 / speedBonus);
+        }
+
+        // ============ 视觉效果 ============
+        function showNotification(message, isWarning = false, type = 'default') {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            const div = document.createElement('div');
+            div.className = `notification ${isWarning ? 'warning' : ''} ${type !== 'default' ? type : ''}`;
+            div.textContent = message;
+            document.body.appendChild(div);
+
+            setTimeout(() => div.remove(), 3000);
+        }
+
+        function showCoinAnimation(seatIndex, amount) {
+            const seat = document.querySelector(`[data-seat="${seatIndex}"]`);
+            if (!seat) return;
+
+            const rect = seat.getBoundingClientRect();
+            const coin = document.createElement('div');
+            coin.className = 'coin-animation';
+            coin.textContent = `+${amount}💰`;
+            coin.style.left = `${rect.left + rect.width / 2}px`;
+            coin.style.top = `${rect.top}px`;
+            document.body.appendChild(coin);
+
+            setTimeout(() => coin.remove(), 1000);
+        }
+
+        // ============ 事件监听 ============
+        function setupEventListeners() {
+            document.getElementById('hireBtn').onclick = hireEmployee;
+        }
+
+        // ============ 启动游戏 ============
+        window.onload = init;
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# 忽略缓存和临时文件
+.cache/
+*.log
+node_modules/
+.DS_Store
+Thumbs.db
