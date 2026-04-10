@@ -889,6 +889,11 @@
             box-shadow: 0 8px 30px rgba(50,205,50,0.4), 0 4px 10px rgba(0,0,0,0.1);
         }
 
+        .notification.error {
+            background: linear-gradient(135deg, #FF4444 0%, #CC0000 100%);
+            box-shadow: 0 8px 30px rgba(255,68,68,0.4), 0 4px 10px rgba(0,0,0,0.1);
+        }
+
         @keyframes slideDown {
             from { transform: translateX(-50%) translateY(-50px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -2111,7 +2116,8 @@
                 { id: 'customerRate', emoji: '📈', name: '吸引顾客', desc: '顾客来得更快', cost: 150, maxLevel: 5, currentLevel: 0 },
                 { id: 'tipRate', emoji: '💝', name: '小费加成', desc: '+10% 金币收益', cost: 200, maxLevel: 3, currentLevel: 0 },
                 { id: 'patience', emoji: '⏱️', name: '耐心培训', desc: '+3秒等待时间', cost: 180, maxLevel: 3, currentLevel: 0 },
-                { id: 'employeeSpeed', emoji: '🚀', name: '员工效率', desc: '员工服务更快', cost: 250, maxLevel: 3, currentLevel: 0 }
+                { id: 'employeeSpeed', emoji: '🚀', name: '员工效率', desc: '员工服务更快', cost: 250, maxLevel: 3, currentLevel: 0 },
+                { id: 'foodQuality', emoji: '⭐', name: '菜品升级', desc: '+15% 菜品单价', cost: 300, maxLevel: 5, currentLevel: 0 }
             ],
             customerAvatars: ['😊', '🙂', '😄', '🥰', '😋', '🤗', '😎', '🧐', '👩', '👨', '👧', '👦', '🧑', '👵', '👴'],
             angryAvatars: ['😠', '😤', '😡', '🤬', '💢'],
@@ -2802,6 +2808,16 @@
 
             if (!customer || customer.served) return;
 
+            // 检查玩家是否选择了顾客想要的菜品
+            if (gameData.selectedFood !== customer.order) {
+                const wantedFood = gameData.menuItems.find(m => m.id === customer.order);
+                const selectedFood = gameData.menuItems.find(m => m.id === gameData.selectedFood);
+                const wantedName = wantedFood ? wantedFood.name : '未知菜品';
+                const selectedName = selectedFood ? selectedFood.name : '未选择';
+                showNotification(`上菜错误！顾客想要 ${wantedName}，你却准备了 ${selectedName}`, false, 'error');
+                return; // 不上菜，不扣任何东西，只是阻止服务
+            }
+
             // 立即标记已服务，防止重复触发
             customer.served = true;
 
@@ -2816,17 +2832,15 @@
                 clearTimeout(customer.timeoutId);
             }
 
-            // 如果没有选择菜品，随机选一个已解锁的
-            let food = gameData.menuItems.find(m => m.id === gameData.selectedFood);
-            if (!food || !food.unlocked) {
-                food = gameData.menuItems.find(m => m.unlocked);
-            }
+            // 顾客点的菜品（已确认匹配）
+            const food = gameData.menuItems.find(m => m.id === customer.order);
 
             if (!food) return;
 
-            // 计算金币（考虑小费加成）
-            const tipBonus = 1 + (gameData.upgrades.find(u => u.id === 'tipRate').currentLevel * 0.1);
-            const goldEarned = Math.floor(food.price * tipBonus);
+            // 计算金币（考虑菜品质量和升级加成）
+            const priceBonus = 1 + (gameData.upgrades.find(u => u.id === 'foodQuality')?.currentLevel * 0.15 || 0);
+            const tipBonus = 1 + (gameData.upgrades.find(u => u.id === 'tipRate')?.currentLevel * 0.1 || 0);
+            const goldEarned = Math.floor(food.price * priceBonus * tipBonus);
 
             gameData.gold += goldEarned;
             gameData.totalGoldEarned += goldEarned;
@@ -3130,34 +3144,42 @@
             if (employeeWorkInterval) clearInterval(employeeWorkInterval);
 
             const speedBonus = 1 + (gameData.upgrades.find(u => u.id === 'employeeSpeed')?.currentLevel * 0.3 || 0);
-            let isServing = false; // 防止重复触发
 
             employeeWorkInterval = setInterval(() => {
                 if (gameData.employees.length === 0) return;
-                if (isServing) return; // 正在服务中，跳过
 
-                // 找一个未服务的顾客
-                const unservedCustomer = gameData.customers.find(c => !c.served && !c.isBeingServedBy);
-                if (unservedCustomer) {
-                    isServing = true;
-                    const employee = gameData.employees[0];
+                // 每个空闲的员工独立找顾客服务
+                gameData.employees.forEach(employee => {
+                    if (employee.isWorking) return; // 已在工作，跳过
+
+                    // 找一个未服务的顾客（员工会智能匹配顾客的菜品）
+                    const unservedCustomer = gameData.customers.find(c => !c.served && !c.isBeingServedBy);
+                    if (!unservedCustomer) return; // 没有顾客，跳过
+
+                    // 开始服务
                     employee.isWorking = true;
                     unservedCustomer.isBeingServedBy = employee.name;
-                    renderEmployees(); // 更新雇员状态显示
+                    renderEmployees();
 
                     // 模拟上菜时间
                     setTimeout(() => {
                         const idx = gameData.customers.findIndex(c => c.seatIndex === unservedCustomer.seatIndex);
                         if (idx !== -1 && !gameData.customers[idx].served) {
+                            // 员工智能服务：临时切换到顾客想要的菜品，上完再恢复
+                            const originalFood = gameData.selectedFood;
+                            gameData.selectedFood = unservedCustomer.order;
+                            renderMenu(); // 更新菜单高亮
                             serveCustomer(unservedCustomer.seatIndex);
+                            // 恢复玩家原来的选择
+                            gameData.selectedFood = originalFood;
+                            renderMenu();
                         }
                         // 服务完成，重置状态
                         employee.isWorking = false;
-                        isServing = false;
                         renderEmployees();
                     }, 2000 / speedBonus);
-                }
-            }, 3000 / speedBonus);
+                });
+            }, 1000 / speedBonus); // 每秒检查一次，让多个员工能更快响应
         }
 
         // ============ 视觉效果 ============
