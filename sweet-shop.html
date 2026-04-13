@@ -76,64 +76,130 @@
         /* 顶部状态栏 */
         .status-bar {
             background: var(--status-bar-bg);
-            padding: 15px 20px;
+            padding: 10px 15px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
+            gap: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             border-bottom: 3px solid var(--status-bar-border);
             transition: background 0.8s ease, border-color 0.8s ease;
         }
 
+        .status-left {
+            flex-shrink: 0;
+        }
+
         .status-bar h1 {
             color: #FFF;
-            font-size: 24px;
+            font-size: 20px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-            min-width: 140px;
+            white-space: nowrap;
         }
 
         .status-bar h1::before {
             content: '🍰 ';
         }
 
-        .stats {
+        .status-right {
+            flex: 1;
+            min-width: 0;
             display: flex;
-            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: auto 140px 90px;
             align-items: center;
+            gap: 4px 8px;
+        }
+
+        .grid-col-1 { grid-column: 1; justify-self: start; }
+        .grid-col-2 { grid-column: 2; justify-self: center; }
+        .grid-col-3 { grid-column: 3; justify-self: end; }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .stat-item {
             background: rgba(255,255,255,0.95);
-            padding: 10px 18px;
-            border-radius: 25px;
+            padding: 4px 10px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 4px;
             font-weight: bold;
             color: #5D4037;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            font-size: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            font-size: 13px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .stat-icon {
-            font-size: 22px;
+            font-size: 16px;
         }
 
         /* 店铺等级 */
         .shop-level {
             background: linear-gradient(135deg, #FFD700, #FFA500);
             color: #5D4037;
-            padding: 10px 18px;
-            border-radius: 25px;
+            padding: 4px 10px;
+            border-radius: 20px;
             font-weight: bold;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            font-size: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            font-size: 13px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* 经验条 */
+        .exp-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .exp-label {
+            color: rgba(255,255,255,0.9);
+            font-size: 11px;
+            white-space: nowrap;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            min-width: 36px;
+        }
+
+        .exp-bar-container {
+            max-width: 120px;
+            min-width: 60px;
+            height: 12px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 6px;
+            overflow: hidden;
+            min-width: 60px;
+        }
+
+        .exp-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #81C784, #A5D6A7);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+            width: 0%;
         }
 
         /* 难度选择器 */
+        .diff-row {
+            justify-content: flex-end;
+        }
+
         .difficulty-selector {
             display: flex;
-            gap: 3px;
+            gap: 4px;
             background: rgba(255,255,255,0.3);
             padding: 5px;
             border-radius: 25px;
@@ -141,25 +207,35 @@
 
         .diff-btn {
             border: none;
-            padding: 8px 14px;
-            border-radius: 20px;
             cursor: pointer;
-            font-size: 13px;
             font-weight: bold;
             transition: all 0.3s;
             background: transparent;
             color: rgba(255,255,255,0.8);
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 14px;
         }
 
         .diff-btn:hover {
             background: rgba(255,255,255,0.25);
-            color: white;
+            transform: scale(1.1);
         }
 
         .diff-btn.active {
             background: white;
             color: #5D4037;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            width: auto;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
         }
 
         /* 主游戏区域 */
@@ -894,6 +970,194 @@
             box-shadow: 0 8px 30px rgba(255,68,68,0.4), 0 4px 10px rgba(0,0,0,0.1);
         }
 
+        .notification.save {
+            background: linear-gradient(135deg, #6C63FF 0%, #4A42CC 100%);
+            box-shadow: 0 8px 30px rgba(108,99,255,0.4), 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* ===== 存档按钮 ===== */
+        .save-btn {
+            background: rgba(255,255,255,0.95);
+            border: none;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.15s, box-shadow 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: bold;
+            color: #5D4037;
+            height: 28px;
+        }
+        .save-btn:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .save-btn:active { transform: scale(0.95); }
+
+        /* ===== 存档槽位弹窗 ===== */
+        .save-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .save-modal-overlay.open { display: flex; }
+
+        .save-modal {
+            background: linear-gradient(135deg, #FFF8DC, #FFF0F5);
+            border-radius: 20px;
+            padding: 24px;
+            width: 90%;
+            max-width: 380px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        .save-modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #5D4037;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .save-slot {
+            background: rgba(255,255,255,0.85);
+            border: 2px solid #DEB887;
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .save-slot.is-current,
+        .save-slot-row.is-current {
+            border-color: #6C63FF;
+            background: rgba(108,99,255,0.08);
+        }
+        .save-slot-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .save-slot-name {
+            font-weight: bold;
+            color: #5D4037;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        .save-slot-meta {
+            font-size: 12px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .save-slot-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .slot-btn {
+            border: none;
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .slot-btn:active { transform: scale(0.93); }
+        .slot-btn.save  { background: #6C63FF; color: #fff; }
+        .slot-btn.load  { background: #4CAF50; color: #fff; }
+        .slot-btn.del   { background: #FF5722; color: #fff; }
+        .slot-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        .save-modal-close {
+            display: block;
+            width: 100%;
+            margin-top: 14px;
+            padding: 10px;
+            border: none;
+            border-radius: 12px;
+            background: #eee;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* ===== 启动检测弹窗 ===== */
+        .start-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+        .start-modal-overlay.open { display: flex; }
+
+        .start-modal {
+            background: linear-gradient(135deg, #FFF8DC, #FFF0F5);
+            border-radius: 20px;
+            padding: 28px 24px;
+            width: 90%;
+            max-width: 360px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            text-align: center;
+            animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .start-modal-icon { font-size: 48px; margin-bottom: 10px; }
+        .start-modal-title { font-size: 20px; font-weight: bold; color: #5D4037; margin-bottom: 8px; }
+        .start-modal-desc  { font-size: 14px; color: #888; margin-bottom: 18px; line-height: 1.5; }
+
+        .start-modal-latest {
+            background: rgba(255,255,255,0.85);
+            border: 2px solid #6C63FF;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        .start-modal-latest-label { font-size: 12px; color: #6C63FF; font-weight: bold; margin-bottom: 4px; }
+        .start-modal-latest-name  { font-size: 15px; font-weight: bold; color: #5D4037; }
+        .start-modal-latest-meta  { font-size: 12px; color: #888; margin-top: 2px; }
+
+        .start-modal-btns { display: flex; flex-direction: column; gap: 8px; }
+        .start-modal-btn {
+            border: none; border-radius: 12px; padding: 12px;
+            font-size: 15px; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .start-modal-btn:active { transform: scale(0.97); }
+        .start-modal-btn.primary   { background: linear-gradient(135deg, #6C63FF, #4A42CC); color: #fff; }
+        .start-modal-btn.secondary { background: linear-gradient(135deg, #4CAF50, #388E3C); color: #fff; }
+        .start-modal-btn.new-game  { background: #eee; color: #555; }
+
+        /* 设置Tab存档区域 */
+        .save-slots-section { margin-top: 4px; }
+        .save-slot-row {
+            background: rgba(255,255,255,0.85);
+            border: 2px solid #DEB887;
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .save-slot-row .save-slot-info { flex: 1; }
+        .save-slot-row .save-slot-name { font-size: 13px; }
+        .save-slot-row .save-slot-meta { font-size: 11px; }
+
         @keyframes slideDown {
             from { transform: translateX(-50%) translateY(-50px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -1270,7 +1534,7 @@
         }
 
         .achievement-popup-reward {
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 6px;
             background: rgba(255, 215, 0, 0.15);
@@ -1294,6 +1558,19 @@
             border: 1px solid #ddd;
         }
 
+        .achievement-popup-hint {
+            color: #FF69B4;
+            font-size: 13px;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        .achievement-popup-footer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         .achievement-popup-btn {
             background: linear-gradient(135deg, #FF85A2 0%, #FF4D88 100%);
             color: white;
@@ -1303,7 +1580,6 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 20px;
             box-shadow: 0 5px 18px rgba(255,77,136,0.4);
             transition: all 0.25s;
             letter-spacing: 1px;
@@ -1356,8 +1632,6 @@
             /* 顶部状态栏 - 极简 */
             .status-bar {
                 padding: 6px 10px;
-                flex-wrap: nowrap;
-                justify-content: space-between;
                 gap: 6px;
                 min-height: auto;
             }
@@ -1367,7 +1641,6 @@
                 min-width: auto;
                 width: auto;
                 text-align: left;
-                order: 1;
                 flex-shrink: 0;
             }
 
@@ -1376,16 +1649,33 @@
             }
 
             .stats {
-                order: 2;
-                width: auto;
+                display: flex;
+                justify-content: flex-end;
+                align-items: flex-start;
+                gap: 0 16px;
+                width: 100%;
+            }
+
+            .stats-col {
+                display: flex;
+                flex-direction: column;
                 gap: 4px;
-                flex-wrap: nowrap;
+                flex-shrink: 0;
+            }
+
+            .exp-row {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 4px;
+                white-space: nowrap;
             }
 
             .stat-item {
                 padding: 3px 6px;
                 font-size: 11px;
                 gap: 3px;
+                white-space: nowrap;
             }
 
             .stat-icon {
@@ -1397,6 +1687,19 @@
                 font-size: 11px;
             }
 
+            .exp-label {
+                font-size: 10px;
+                min-width: auto;
+                white-space: nowrap;
+            }
+
+            .exp-bar-container {
+                height: 8px;
+                min-width: 40px;
+                max-width: 60px;
+                flex-shrink: 0;
+            }
+
             .achievement-btn {
                 padding: 3px 6px;
                 font-size: 11px;
@@ -1406,8 +1709,22 @@
                 font-size: 12px;
             }
 
-            .difficulty-selector {
-                display: none; /* 移动端隐藏难度选择 */
+            .diff-row {
+                flex-shrink: 0;
+            }
+
+            .diff-btn {
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+                padding: 0;
+            }
+
+            .diff-btn.active {
+                padding: 3px 8px;
+                font-size: 11px;
+                width: auto;
+                border-radius: 20px;
             }
 
             /* 游戏容器 - 垂直布局 */
@@ -1890,27 +2207,29 @@
 <body>
         <!-- 状态栏 -->
     <div class="status-bar">
-        <h1>甜蜜时光</h1>
-        <div class="stats">
-            <div class="stat-item">
-                <span class="stat-icon">💰</span>
-                <span id="gold">0</span>
-            </div>
-            <div class="shop-level">
-                <span>⭐ Lv.<span id="level">1</span></span>
-            </div>
-            <div class="stat-item" id="customersLostStat" style="display: none;">
-                <span class="stat-icon">😠</span>
-                <span id="customersLost">0</span>
-            </div>
-            <button class="achievement-btn" id="achievementBtn" onclick="toggleAchievementPanel()">
-                <span>🏆</span>
-                <span id="achievementCount">0/17</span>
-            </button>
-            <div class="difficulty-selector">
-                <button class="diff-btn active" data-diff="easy" onclick="setDifficulty('easy')">😊简单</button>
-                <button class="diff-btn" data-diff="normal" onclick="setDifficulty('normal')">🤔普通</button>
-                <button class="diff-btn" data-diff="hard" onclick="setDifficulty('hard')">😰困难</button>
+        <div class="status-left">
+            <h1>甜蜜时光</h1>
+        </div>
+        <div class="status-right">
+            <div class="stats">
+                <!-- 第一行：经验 | 等级 | 金币 -->
+                <div class="stat-row grid-col-1">
+                    <div class="exp-label">经验</div>
+                    <div class="exp-bar-container">
+                        <div class="exp-bar-fill" id="expBarFill"></div>
+                    </div>
+                    <div class="exp-label" id="expText">0/100</div>
+                </div>
+                <div class="stat-item shop-level grid-col-2">⭐ Lv.<span id="level">1</span></div>
+                <div class="stat-item grid-col-3">💰 <span id="gold">0</span></div>
+                <!-- 第二行：难度 | 成就 | 存档 -->
+                <div class="difficulty-selector grid-col-1">
+                    <button class="diff-btn active" data-diff="easy" onclick="setDifficulty('easy')">😊 简单</button>
+                    <button class="diff-btn" data-diff="normal" onclick="setDifficulty('normal')">🤔</button>
+                    <button class="diff-btn" data-diff="hard" onclick="setDifficulty('hard')">😰</button>
+                </div>
+                <button class="achievement-btn stat-item grid-col-2" onclick="toggleAchievementPanel()">🏆 <span id="achievementCount">0/17</span></button>
+                <button class="save-btn grid-col-3" onclick="openSaveModal()" title="存档">💾</button>
             </div>
         </div>
     </div>
@@ -1937,7 +2256,38 @@
         <div class="achievement-popup-name" id="popupName"></div>
         <div class="achievement-popup-desc" id="popupDesc"></div>
         <div class="achievement-popup-reward" id="popupReward"></div>
-        <button class="achievement-popup-btn" id="popupClaimBtn" onclick="claimAchievementReward()">🎁 领取奖励</button>
+        <div class="achievement-popup-hint" id="popupQueueHint" style="display:none"></div>
+        <div class="achievement-popup-footer">
+            <button class="achievement-popup-btn" id="popupClaimBtn" onclick="claimAchievementReward()">🎁 领取奖励</button>
+        </div>
+    </div>
+
+    <!-- 存档槽位弹窗 -->
+    <div class="save-modal-overlay" id="saveModalOverlay" onclick="closeSaveModalIfOutside(event)">
+        <div class="save-modal" id="saveModal">
+            <div class="save-modal-title">💾 存档管理</div>
+            <div id="saveSlotList"></div>
+            <button class="save-modal-close" onclick="closeSaveModal()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 启动检测弹窗 -->
+    <div class="start-modal-overlay" id="startModalOverlay">
+        <div class="start-modal">
+            <div class="start-modal-icon">🍰</div>
+            <div class="start-modal-title">欢迎回来！</div>
+            <div class="start-modal-desc">检测到你的存档，是否继续上次的游戏？</div>
+            <div class="start-modal-latest" id="startModalLatest">
+                <div class="start-modal-latest-label">📌 最近存档</div>
+                <div class="start-modal-latest-name" id="startModalSaveName">—</div>
+                <div class="start-modal-latest-meta" id="startModalSaveMeta">—</div>
+            </div>
+            <div class="start-modal-btns">
+                <button class="start-modal-btn primary" id="startContinueBtn" onclick="continueLatestSave()">▶ 继续游戏</button>
+                <button class="start-modal-btn secondary" onclick="openOtherSavesFromStart()">📂 选择其他存档</button>
+                <button class="start-modal-btn new-game" onclick="startNewGameFromModal()">🆕 开始新游戏</button>
+            </div>
+        </div>
     </div>
 
     <!-- 遮罩层 -->
@@ -2057,6 +2407,10 @@
                             </div>
                         </div>
                     </div>
+                    <div class="settings-section save-slots-section">
+                        <h3 class="settings-title">💾 存档管理</h3>
+                        <div id="settingsSaveSlots"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2095,7 +2449,7 @@
             difficulty: 'normal', // 当前难度
             paused: false, // 游戏暂停状态
             pendingCustomer: null, // 待补位的座位（成就弹窗期间）
-            pendingAchievement: null, // 待领取的成就
+            achievementQueue: [], // 待领取成就队列（最多3个）
             difficultySettings: {
                 easy: { multiplier: 1.5, label: '简单', emoji: '😊' },
                 normal: { multiplier: 1.0, label: '普通', emoji: '🤔' },
@@ -2177,9 +2531,15 @@
             document.body.classList.remove('difficulty-easy', 'difficulty-normal', 'difficulty-hard');
             document.body.classList.add(`difficulty-${diff}`);
 
-            // 更新按钮样式（桌面端）
+            // 更新按钮样式和文字（桌面端）
+            const diffNames = { easy: '简单', normal: '普通', hard: '困难' };
+            const diffEmojis = { easy: '😊', normal: '🤔', hard: '😰' };
             document.querySelectorAll('.diff-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.diff === diff);
+                const isActive = btn.dataset.diff === diff;
+                btn.classList.toggle('active', isActive);
+                btn.textContent = isActive
+                    ? diffEmojis[btn.dataset.diff] + ' ' + diffNames[btn.dataset.diff]
+                    : diffEmojis[btn.dataset.diff];
             });
 
             // 更新设置Tab难度卡片（移动端）
@@ -2203,6 +2563,268 @@
             gameData.waitTimeLimit = (gameData.baseWaitTime + patienceBonus) * gameData.difficultySettings[gameData.difficulty].multiplier;
         }
 
+        // ============ 存档系统 ============
+        const SAVE_KEY_PREFIX = 'sweetshop_save_';
+        const LAST_SLOT_KEY   = 'sweetshop_last_slot';
+        const TOTAL_SLOTS     = 3;
+        let autoSaveInterval  = null;
+        let lastUsedSlot      = 1; // 默认槽位1
+
+        /** 获取指定槽存档数据，无存档返回 null */
+        function getSaveData(slot) {
+            try {
+                const raw = localStorage.getItem(SAVE_KEY_PREFIX + slot);
+                return raw ? JSON.parse(raw) : null;
+            } catch(e) { return null; }
+        }
+
+        /** 保存到指定槽 */
+        function saveToSlot(slot, silent = false) {
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const timeStr = `${now.getMonth()+1}月${now.getDate()}日 ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+            const snapshot = {
+                slot,
+                savedAt: timeStr,
+                timestamp: now.getTime(),
+                // 进度
+                gold: gameData.gold,
+                level: gameData.level,
+                experience: gameData.experience,
+                maxSeats: gameData.maxSeats,
+                baseMaxSeats: gameData.baseMaxSeats,
+                difficulty: gameData.difficulty,
+                selectedFood: gameData.selectedFood,
+                // 升级
+                upgrades: gameData.upgrades.map(u => ({ id: u.id, currentLevel: u.currentLevel })),
+                // 菜单解锁
+                menuItems: gameData.menuItems.map(m => ({ id: m.id, unlocked: m.unlocked })),
+                // 成就
+                achievements: gameData.achievements.map(a => ({ id: a.id, unlocked: a.unlocked })),
+                // 员工
+                employees: gameData.employees.map(e => ({ name: e.name, emoji: e.avatar || e.emoji })),
+                // 统计
+                customersServed: gameData.customersServed,
+                customersLost: gameData.customersLost,
+                totalGoldEarned: gameData.totalGoldEarned,
+                currentStreak: gameData.currentStreak,
+                bestStreak: gameData.bestStreak,
+                sessionCustomersLost: gameData.sessionCustomersLost
+            };
+
+            localStorage.setItem(SAVE_KEY_PREFIX + slot, JSON.stringify(snapshot));
+            localStorage.setItem(LAST_SLOT_KEY, slot);
+            lastUsedSlot = slot;
+
+            if (!silent) {
+                showNotification('游戏已保存 💾', false, 'save');
+            }
+            // 刷新弹窗和设置Tab
+            renderSaveSlots();
+        }
+
+        /** 从指定槽读档 */
+        function loadFromSlot(slot) {
+            const data = getSaveData(slot);
+            if (!data) { showNotification('该槽位没有存档', true); return; }
+
+            // 恢复进度
+            gameData.gold          = data.gold ?? 50;
+            gameData.level         = data.level ?? 1;
+            gameData.experience    = data.experience ?? 0;
+            gameData.maxSeats      = data.maxSeats ?? 4;
+            gameData.baseMaxSeats  = data.baseMaxSeats ?? 4;
+            gameData.selectedFood  = data.selectedFood ?? null;
+            gameData.customersServed      = data.customersServed ?? 0;
+            gameData.customersLost        = data.customersLost ?? 0;
+            gameData.totalGoldEarned      = data.totalGoldEarned ?? 0;
+            gameData.currentStreak        = data.currentStreak ?? 0;
+            gameData.bestStreak           = data.bestStreak ?? 0;
+            gameData.sessionCustomersLost = data.sessionCustomersLost ?? 0;
+
+            // 升级
+            if (data.upgrades) {
+                data.upgrades.forEach(saved => {
+                    const u = gameData.upgrades.find(u => u.id === saved.id);
+                    if (u) u.currentLevel = saved.currentLevel;
+                });
+            }
+            // 菜单
+            if (data.menuItems) {
+                data.menuItems.forEach(saved => {
+                    const m = gameData.menuItems.find(m => m.id === saved.id);
+                    if (m) m.unlocked = saved.unlocked;
+                });
+            }
+            // 成就
+            if (data.achievements) {
+                data.achievements.forEach(saved => {
+                    const a = gameData.achievements.find(a => a.id === saved.id);
+                    if (a) a.unlocked = saved.unlocked;
+                });
+            }
+            // 员工
+            gameData.employees = [];
+            if (data.employees) {
+                data.employees.forEach(e => {
+                    gameData.employees.push({ name: e.name, emoji: e.emoji, avatar: e.emoji, isWorking: false });
+                });
+            }
+            // 难度
+            if (data.difficulty) setDifficulty(data.difficulty);
+
+            // 如果没有已选菜品，选第一个解锁的
+            if (!gameData.selectedFood) {
+                const first = gameData.menuItems.find(m => m.unlocked);
+                if (first) gameData.selectedFood = first.id;
+            }
+
+            lastUsedSlot = slot;
+            localStorage.setItem(LAST_SLOT_KEY, slot);
+
+            // 重新渲染所有 UI
+            gameData.customers = [];
+            gameData.waitingCustomers = [];
+            renderSeats();
+            renderMenu();
+            renderUpgrades();
+            renderAchievements();
+            renderEmployees();
+            updateUI();
+            updateWaitTime();
+            startEmployeeWork();
+
+            closeSaveModal();
+            showNotification(`已读取存档 ${slot} 💾`, false, 'save');
+        }
+
+        /** 删除指定槽存档 */
+        function deleteSlot(slot) {
+            const row = document.querySelector(`.save-slot[data-slot="${slot}"],.save-slot-row[data-slot="${slot}"]`);
+            if (!row) return;
+            row.innerHTML = `
+                <div class="save-slot-info" style="flex:1">
+                    <div class="save-slot-name" style="color:#FF5722;font-weight:bold">⚠️ 确认删除？</div>
+                    <div class="save-slot-meta">此操作不可撤销</div>
+                </div>
+                <div class="save-slot-actions">
+                    <button class="slot-btn del" onclick="confirmDelete(${slot})">✓ 确认</button>
+                    <button class="slot-btn load" onclick="renderSaveSlots()">✗ 取消</button>
+                </div>`;
+        }
+        function confirmDelete(slot) {
+            const wasCurrent = (lastUsedSlot === slot);
+            localStorage.removeItem(SAVE_KEY_PREFIX + slot);
+            if (lastUsedSlot === slot) lastUsedSlot = null;
+            closeSaveModal();
+            if (wasCurrent) {
+                // 删除的是当前存档 → 整个页面重置
+                location.reload();
+            } else {
+                renderSaveSlots();
+                showNotification(`存档${slot}已删除`, true);
+            }
+        }
+
+        /** 格式化槽位展示名称 */
+        function slotDisplayInfo(slot) {
+            const data = getSaveData(slot);
+            if (!data) return { name: `存档槽 ${slot}（空）`, meta: '暂无存档', empty: true };
+            const isCurrent = (lastUsedSlot === slot);
+            return {
+                name: `存档 ${slot}  ·  Lv.${data.level}`,
+                meta: `💰${data.gold} 金币  ·  ${data.savedAt}`,
+                empty: false,
+                isCurrent
+            };
+        }
+
+        /** 渲染存档槽列表（弹窗 + 设置Tab） */
+        function renderSaveSlots() {
+            const listEl     = document.getElementById('saveSlotList');
+            const settingsEl = document.getElementById('settingsSaveSlots');
+
+            [listEl, settingsEl].forEach((el, idx) => {
+                if (!el) return;
+                el.innerHTML = '';
+                for (let s = 1; s <= TOTAL_SLOTS; s++) {
+                    const info = slotDisplayInfo(s);
+                    const isSettings = idx === 1;
+                    const row = document.createElement('div');
+                    row.className = `${isSettings ? 'save-slot-row' : 'save-slot'}${info.isCurrent ? ' is-current' : ''}`;
+                    const btns = info.empty
+                        ? `<button class="slot-btn save" onclick="saveToSlot(${s})">📥 存档</button>`
+                        : info.isCurrent
+                            ? `<button class="slot-btn save" onclick="saveToSlot(${s})">🔄 覆盖</button><button class="slot-btn del" onclick="deleteSlot(${s})">🗑️</button>`
+                            : `<button class="slot-btn load" onclick="loadFromSlot(${s})">📤 读取</button><button class="slot-btn del" onclick="deleteSlot(${s})">🗑️</button>`;
+                    row.innerHTML = `
+                        <div class="save-slot-info">
+                            <div class="save-slot-name">${info.name}</div>
+                            <div class="save-slot-meta">${info.meta}</div>
+                        </div>
+                        <div class="save-slot-actions">${btns}</div>`;
+                    row.dataset.slot = s;
+                    el.appendChild(row);
+                }
+            });
+        }
+
+        /** 打开存档弹窗 */
+        function openSaveModal() {
+            renderSaveSlots();
+            document.getElementById('saveModalOverlay').classList.add('open');
+        }
+
+        function closeSaveModal() {
+            document.getElementById('saveModalOverlay').classList.remove('open');
+        }
+
+        function closeSaveModalIfOutside(e) {
+            if (e.target === document.getElementById('saveModalOverlay')) closeSaveModal();
+        }
+
+        /** 启动存档检测（页面加载时调用） */
+        function checkSaveOnStart() {
+            let latestSlot = null;
+            let latestTime = 0;
+            for (let s = 1; s <= TOTAL_SLOTS; s++) {
+                const d = getSaveData(s);
+                if (d && d.timestamp > latestTime) { latestTime = d.timestamp; latestSlot = s; }
+            }
+            if (!latestSlot) return; // 没有任何存档，直接开始新游戏
+
+            const info = slotDisplayInfo(latestSlot);
+            document.getElementById('startModalSaveName').textContent = info.name;
+            document.getElementById('startModalSaveMeta').textContent = info.meta;
+            document.getElementById('startContinueBtn').dataset.slot = latestSlot;
+            document.getElementById('startModalOverlay').classList.add('open');
+        }
+
+        function continueLatestSave() {
+            const slot = parseInt(document.getElementById('startContinueBtn').dataset.slot);
+            document.getElementById('startModalOverlay').classList.remove('open');
+            loadFromSlot(slot);
+        }
+
+        function openOtherSavesFromStart() {
+            document.getElementById('startModalOverlay').classList.remove('open');
+            openSaveModal();
+        }
+
+        function startNewGameFromModal() {
+            document.getElementById('startModalOverlay').classList.remove('open');
+            // 新游戏不读档，直接用初始 gameData
+        }
+
+        /** 启动自动存档（每60秒） */
+        function startAutoSave() {
+            if (autoSaveInterval) clearInterval(autoSaveInterval);
+            autoSaveInterval = setInterval(() => {
+                if (!gameData.paused) saveToSlot(lastUsedSlot, true); // silent=true，不弹通知
+            }, 60000);
+        }
+
         // ============ 初始化 ============
         function init() {
             renderSeats();
@@ -2222,6 +2844,19 @@
                 gameData.selectedFood = firstUnlocked.id;
                 renderMenu();
             }
+
+            // 读取上次使用的槽位
+            const savedSlot = parseInt(localStorage.getItem(LAST_SLOT_KEY));
+            if (savedSlot && savedSlot >= 1 && savedSlot <= TOTAL_SLOTS) lastUsedSlot = savedSlot;
+
+            // 启动存档检测弹窗
+            checkSaveOnStart();
+
+            // 启动自动存档
+            startAutoSave();
+
+            // 渲染设置Tab存档区
+            renderSaveSlots();
         }
 
         // ============ 座位渲染 ============
@@ -2554,10 +3189,24 @@
             // 更新UI
             renderAchievements();
 
-            // 显示成就弹窗（弹窗内玩家手动领取）
+            // 入队（最多3个，超出丢弃）
+            if (gameData.achievementQueue.length < 3) {
+                gameData.achievementQueue.push(achievement);
+            }
+
+            // 如果当前没有显示弹窗，开始处理队列
+            if (!document.getElementById('achievementPopup').classList.contains('show')) {
+                processAchievementQueue();
+            }
+        }
+
+        function processAchievementQueue() {
+            if (gameData.achievementQueue.length === 0) return;
+
+            const achievement = gameData.achievementQueue[0];
             showAchievementPopup(achievement);
 
-            // 在成就面板中高亮显示
+            // 在成就面板中高亮
             setTimeout(() => {
                 const item = document.getElementById(`achievement-${achievement.id}`);
                 if (item) {
@@ -2571,6 +3220,7 @@
             const popup = document.getElementById('achievementPopup');
             const overlay = document.getElementById('achievementOverlay');
             const claimBtn = document.getElementById('popupClaimBtn');
+            const hint = document.getElementById('popupQueueHint');
 
             document.getElementById('popupIcon').textContent = achievement.emoji;
             document.getElementById('popupName').textContent = achievement.name;
@@ -2580,8 +3230,14 @@
             // 显示领取按钮
             claimBtn.style.display = 'inline-block';
 
-            // 保存待领取成就引用
-            gameData.pendingAchievement = achievement;
+            // 显示队列提示（还有N个待解锁）
+            const queueLen = gameData.achievementQueue.length;
+            if (queueLen > 1) {
+                hint.textContent = `还有 ${queueLen - 1} 个成就待解锁！`;
+                hint.style.display = 'block';
+            } else {
+                hint.style.display = 'none';
+            }
 
             popup.classList.add('show');
             overlay.style.display = 'block';
@@ -2601,15 +3257,14 @@
             const popup = document.getElementById('achievementPopup');
             const overlay = document.getElementById('achievementOverlay');
 
-            // 发放成就金币奖励
-            if (gameData.pendingAchievement) {
-                const ach = gameData.pendingAchievement;
+            // 发放成就金币奖励（从队列头部取）
+            if (gameData.achievementQueue.length > 0) {
+                const ach = gameData.achievementQueue.shift();
                 const reward = ach._pendingReward || ach.reward;
                 gameData.gold += reward;
                 gameData.totalGoldEarned += reward;
                 ach._pendingReward = 0;
                 showNotification(`🏆 解锁成就: ${ach.name}！+${reward}💰`, false, 'success');
-                gameData.pendingAchievement = null;
             }
 
             popup.classList.remove('show');
@@ -2617,17 +3272,21 @@
             overlay.style.display = 'none';
             overlay.onclick = null;
 
-            // 恢复游戏
-            gameData.paused = false;
-
-            // 处理待补位的座位
-            if (gameData.pendingCustomer) {
-                const { seatIndex } = gameData.pendingCustomer;
-                gameData.pendingCustomer = null;
-                if (gameData.waitingCustomers.length > 0) {
-                    const nextCustomer = gameData.waitingCustomers.shift();
-                    addCustomerToSeat(nextCustomer, seatIndex);
+            // 处理待补位的座位（仅在队列清空后处理）
+            if (gameData.achievementQueue.length === 0) {
+                gameData.paused = false;
+                if (gameData.pendingCustomer) {
+                    const { seatIndex } = gameData.pendingCustomer;
+                    gameData.pendingCustomer = null;
+                    if (gameData.waitingCustomers.length > 0) {
+                        const nextCustomer = gameData.waitingCustomers.shift();
+                        addCustomerToSeat(nextCustomer, seatIndex);
+                    }
                 }
+            } else {
+                // 还有待领取，继续弹出下一个
+                gameData.paused = true; // 保持暂停，等玩家领完
+                setTimeout(() => processAchievementQueue(), 300);
             }
 
             updateUI();
@@ -2664,13 +3323,13 @@
             document.getElementById('gold').textContent = gameData.gold;
             document.getElementById('level').textContent = gameData.level;
 
-            // 显示流失顾客计数
-            const lostStat = document.getElementById('customersLostStat');
-            const lostCount = document.getElementById('customersLost');
-            if (gameData.customersLost > 0) {
-                lostStat.style.display = 'flex';
-                lostCount.textContent = gameData.customersLost;
-            }
+            // 更新经验条
+            const expNeeded = gameData.level * 50;
+            const expPercent = Math.min((gameData.experience / expNeeded) * 100, 100);
+            const expFill = document.getElementById('expBarFill');
+            const expText = document.getElementById('expText');
+            if (expFill) expFill.style.width = expPercent + '%';
+            if (expText) expText.textContent = `${gameData.experience}/${expNeeded}`;
 
             // 更新设置页统计
             updateSettingsStats();
