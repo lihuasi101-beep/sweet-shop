@@ -1650,10 +1650,19 @@
 
             .stats {
                 display: flex;
+                flex-wrap: wrap;
                 justify-content: flex-end;
                 align-items: flex-start;
-                gap: 0 16px;
+                gap: 4px 16px;
                 width: 100%;
+            }
+
+            /* 清除桌面端 grid-column，移动端不受影响 */
+            .stats > .grid-col-1,
+            .stats > .grid-col-2,
+            .stats > .grid-col-3 {
+                grid-column: unset;
+                justify-self: unset;
             }
 
             .stats-col {
