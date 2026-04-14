@@ -1191,38 +1191,23 @@
         /* 金币飞向计数器动画 */
         .flying-coin {
             position: fixed;
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
             pointer-events: none;
             z-index: 2000;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
             transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             opacity: 1;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #FFF176 0%, #FFEB3B 20%, #FFC107 50%, #FF9800 80%, #F57C00 100%);
-            border: 4px solid #D84315;
-            box-shadow: 
-                0 0 15px rgba(255, 193, 7, 0.8),
-                0 0 30px rgba(255, 152, 0, 0.4),
-                inset 0 -3px 6px rgba(0,0,0,0.3), 
-                inset 0 3px 6px rgba(255,255,255,0.6);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 26px;
-            font-weight: 900;
-            color: #3E2723;
-            text-shadow: 
-                0 0 4px #FFFFFF,
-                0 0 8px #FFFFFF,
-                0 1px 2px rgba(255,255,255,1);
-            font-family: 'Microsoft YaHei', sans-serif;
-            -webkit-text-stroke: 1px #FFFFFF;
+            font-size: 32px;
+            font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Twitter Color Emoji", "Facebook Color Emoji", sans-serif;
+            line-height: 1;
         }
 
         /* 飞金币散射偏移量 */
-        .flying-coin:nth-child(odd) { width: 42px; height: 42px; font-size: 22px; }
-        .flying-coin:nth-child(3n) { width: 54px; height: 54px; font-size: 30px; }
+        .flying-coin:nth-child(odd) { font-size: 28px; }
+        .flying-coin:nth-child(3n) { font-size: 36px; }
 
         /* 金币计数器收到动画 */
         .gold-counter-bump {
