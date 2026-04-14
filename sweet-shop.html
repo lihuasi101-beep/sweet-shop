@@ -1188,6 +1188,33 @@
             100% { opacity: 0; transform: scale(1.5) translateY(-120px); }
         }
 
+        /* 金币飞向计数器动画 */
+        .flying-coin {
+            position: fixed;
+            font-size: 22px;
+            pointer-events: none;
+            z-index: 2000;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            opacity: 0;
+        }
+
+        /* 金币计数器收到动画 */
+        .gold-counter-bump {
+            animation: goldBump 0.4s ease-out;
+        }
+
+        @keyframes goldBump {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.35); }
+            70%  { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        /* 飞金币散射偏移量 */
+        .flying-coin:nth-child(odd) { font-size: 18px; }
+        .flying-coin:nth-child(3n) { font-size: 24px; }
+
         /* 生气离开动画 */
         .angry-leave {
             position: fixed;
@@ -3333,6 +3360,73 @@
             }
         }
 
+        /** 金币飞向计数器动画 */
+        function spawnCoinAnimation(seatIndex, totalGold) {
+            const seatsContainer = document.getElementById('seats');
+            const seat = seatsContainer.querySelector(`[data-seat="${seatIndex}"]`);
+            const goldEl = document.getElementById('gold');
+            if (!seat || !goldEl) return;
+
+            const seatRect = seat.getBoundingClientRect();
+            const goldRect = goldEl.getBoundingClientRect();
+            const startX = seatRect.left + seatRect.width / 2;
+            const startY = seatRect.top + seatRect.height / 2;
+            const endX = goldRect.left + goldRect.width / 2;
+            const endY = goldRect.top + goldRect.height / 2;
+
+            // 随机撒 5-8 枚金币
+            const count = Math.min(Math.max(5, Math.floor(totalGold / 5)), 8);
+
+            for (let i = 0; i < count; i++) {
+                const coin = document.createElement('div');
+                coin.className = 'flying-coin';
+                coin.textContent = '🪙';
+
+                // 随机散射起点（围绕座位中心）
+                const offsetX = (Math.random() - 0.5) * 40;
+                const offsetY = (Math.random() - 0.5) * 30;
+                const sx = startX + offsetX;
+                const sy = startY + offsetY;
+
+                // 初始位置（隐藏）
+                coin.style.left = sx + 'px';
+                coin.style.top = sy + 'px';
+                coin.style.transform = 'translate(-50%, -50%) scale(0)';
+                coin.style.opacity = '0';
+
+                document.body.appendChild(coin);
+
+                // 延迟启动动画，制造先后顺序
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        coin.style.opacity = '1';
+                        coin.style.transform = 'translate(-50%, -50%) scale(1)';
+
+                        // 飞向终点
+                        setTimeout(() => {
+                            coin.style.left = endX + 'px';
+                            coin.style.top = endY + 'px';
+                            coin.style.transform = 'translate(-50%, -50%) scale(0.3)';
+                            coin.style.opacity = '0';
+                        }, 50 + i * 60);
+                    });
+                });
+
+                // 动画结束后移除
+                setTimeout(() => {
+                    coin.remove();
+                    // 最后一枚到达时触发计数器抖动
+                    if (i === count - 1) {
+                        setTimeout(() => {
+                            goldEl.classList.remove('gold-counter-bump');
+                            void goldEl.offsetWidth; // 强制重绘以便重新触发动画
+                            goldEl.classList.add('gold-counter-bump');
+                        }, 20);
+                    }
+                }, 1100 + i * 60);
+            }
+        }
+
         function updateUI() {
             document.getElementById('gold').textContent = gameData.gold;
             document.getElementById('level').textContent = gameData.level;
@@ -3869,18 +3963,8 @@
         }
 
         function showCoinAnimation(seatIndex, amount) {
-            const seat = document.querySelector(`[data-seat="${seatIndex}"]`);
-            if (!seat) return;
-
-            const rect = seat.getBoundingClientRect();
-            const coin = document.createElement('div');
-            coin.className = 'coin-animation';
-            coin.textContent = `+${amount}💰`;
-            coin.style.left = `${rect.left + rect.width / 2}px`;
-            coin.style.top = `${rect.top}px`;
-            document.body.appendChild(coin);
-
-            setTimeout(() => coin.remove(), 1000);
+            // 使用新的散射金币动画
+            spawnCoinAnimation(seatIndex, amount);
         }
 
         // ============ 事件监听 ============
