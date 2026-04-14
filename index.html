@@ -941,10 +941,10 @@
             background: linear-gradient(135deg, #90EE90 0%, #32CD32 100%);
         }
 
-        /* 通知提示 - 更醒目的设计 */
-        .notification {
-            position: fixed;
-            top: 85px;
+            /* 通知提示 - 更醒目的设计 */
+            .notification {
+                position: fixed;
+                top: 130px;
             left: 50%;
             transform: translateX(-50%);
             background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-secondary) 100%);
@@ -1191,12 +1191,15 @@
         /* 金币飞向计数器动画 */
         .flying-coin {
             position: fixed;
-            font-size: 22px;
+            font-size: 20px;
             pointer-events: none;
             z-index: 2000;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
             transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             opacity: 0;
+            /* 确保emoji在各平台正确渲染 */
+            font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* 金币计数器收到动画 */
@@ -2249,7 +2252,7 @@
         <!-- 状态栏 -->
     <div class="status-bar">
         <div class="status-left">
-            <h1>甜蜜时光 <small>v0.9</small></h1>
+            <h1>甜蜜时光 <small>v0.9.1</small></h1>
         </div>
         <div class="status-right">
             <div class="stats">
@@ -3380,7 +3383,7 @@
             for (let i = 0; i < count; i++) {
                 const coin = document.createElement('div');
                 coin.className = 'flying-coin';
-                coin.textContent = '🪙';
+                coin.textContent = '💰';
 
                 // 随机散射起点（围绕座位中心）
                 const offsetX = (Math.random() - 0.5) * 40;
