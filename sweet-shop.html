@@ -836,6 +836,58 @@
             line-height: 1.5;
         }
 
+        /* 音效开关 */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-radius: 12px;
+        }
+        .toggle-label {
+            font-weight: bold;
+            color: #5D4037;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-secondary) 100%);
+        }
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
         .difficulty-cards {
             display: flex;
             gap: 8px;
@@ -2260,7 +2312,7 @@
         <!-- 状态栏 -->
     <div class="status-bar">
         <div class="status-left">
-            <h1>甜蜜时光 <small>v0.9.5</small></h1>
+            <h1>甜蜜时光 <small>v0.9.6</small></h1>
         </div>
         <div class="status-right">
             <div class="stats">
@@ -2417,6 +2469,16 @@
 
                 <!-- 设置 -->
                 <div class="tab-panel" id="tab-settings">
+                    <div class="settings-section">
+                        <h3 class="settings-title">🔊 音效设置</h3>
+                        <div class="toggle-row">
+                            <span class="toggle-label">游戏音效</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="soundToggle" checked onchange="toggleSound()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
                     <div class="settings-section">
                         <h3 class="settings-title">🎮 难度选择</h3>
                         <p class="settings-desc">切换游戏难度，影响顾客等待时间和收益</p>
@@ -2878,8 +2940,82 @@
             }, 60000);
         }
 
+        // ============ 音效管理器 ============
+        const AudioManager = {
+            enabled: true,
+            ctx: null,
+
+            init() {
+                // 从 localStorage 读取设置
+                const saved = localStorage.getItem('soundEnabled');
+                if (saved !== null) this.enabled = saved === 'true';
+                document.getElementById('soundToggle').checked = this.enabled;
+            },
+
+            play(type) {
+                if (!this.enabled) return;
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+                const ctx = this.ctx;
+                const now = ctx.currentTime;
+
+                if (type === 'coin') {
+                    // 金币声：两个快速上升的正弦波
+                    const osc1 = ctx.createOscillator();
+                    const gain1 = ctx.createGain();
+                    osc1.type = 'sine';
+                    osc1.frequency.setValueAtTime(800, now);
+                    osc1.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                    gain1.gain.setValueAtTime(0.3, now);
+                    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc1.connect(gain1);
+                    gain1.connect(ctx.destination);
+                    osc1.start(now);
+                    osc1.stop(now + 0.15);
+
+                } else if (type === 'achievement') {
+                    // 成就声：三个清脆的音符
+                    const notes = [523, 659, 784]; // C5, E5, G5
+                    notes.forEach((freq, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0, now + i * 0.12);
+                        gain.gain.linearRampToValueAtTime(0.25, now + i * 0.12 + 0.02);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.12 + 0.3);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + i * 0.12);
+                        osc.stop(now + i * 0.12 + 0.3);
+                    });
+
+                } else if (type === 'upgrade') {
+                    // 升级声：短促有力的上滑音
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+                    osc.frequency.exponentialRampToValueAtTime(900, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                }
+            }
+        };
+
+        function toggleSound() {
+            AudioManager.enabled = document.getElementById('soundToggle').checked;
+            localStorage.setItem('soundEnabled', AudioManager.enabled);
+        }
+
         // ============ 初始化 ============
         function init() {
+            AudioManager.init(); // 初始化音效
             renderSeats();
             renderMenu();
             renderUpgrades();
@@ -3298,6 +3434,7 @@
 
             // 创建庆祝粒子
             createAchievementParticles();
+            AudioManager.play('achievement'); // 播放成就音效
 
             // 暂停游戏
             gameData.paused = true;
@@ -3639,6 +3776,7 @@
 
             // 显示金币动画
             showCoinAnimation(seatIndex, goldEarned);
+            AudioManager.play('coin'); // 播放金币音效
             showNotification(`${customer.avatar} 满意离开！+${goldEarned}💰`, false, 'success');
 
             // 检查升级
@@ -3837,6 +3975,7 @@
             applyUpgradeEffect(upgrade);
 
             showNotification(`🎉 ${upgrade.name} 升到 ${upgrade.currentLevel} 级！`);
+            AudioManager.play('upgrade'); // 播放升级音效
             updateUI();
 
             // 重新设置顾客生成速度
