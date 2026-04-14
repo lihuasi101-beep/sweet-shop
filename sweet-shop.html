@@ -2265,7 +2265,7 @@
         <!-- 状态栏 -->
     <div class="status-bar">
         <div class="status-left">
-            <h1>甜蜜时光 <small>v0.9.3</small></h1>
+            <h1>甜蜜时光 <small>v0.9.4</small></h1>
         </div>
         <div class="status-right">
             <div class="stats">
@@ -3418,13 +3418,12 @@
                         coin.style.opacity = '1';
                         coin.style.transform = 'translate(-50%, -50%) scale(1)';
 
-                        // 飞向终点
+                        // 短暂停顿后飞向终点
                         setTimeout(() => {
                             coin.style.left = endX + 'px';
                             coin.style.top = endY + 'px';
                             coin.style.transform = 'translate(-50%, -50%) scale(0.3)';
-                            coin.style.opacity = '0';
-                        }, 50 + i * 60);
+                        }, 150 + i * 80);
                     });
                 });
 
@@ -3439,7 +3438,7 @@
                             goldEl.classList.add('gold-counter-bump');
                         }, 20);
                     }
-                }, 1100 + i * 60);
+                }, 1200 + i * 80);
             }
         }
 
