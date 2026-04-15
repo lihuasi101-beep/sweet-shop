@@ -3026,42 +3026,24 @@
 
             startBGM() {
                 if (!this.bgmEnabled) return;
-
-                // 如果已经在播放，先停止
-                if (this.bgmAudio) {
-                    this.bgmAudio.pause();
-                    this.bgmAudio = null;
+                if (this.bgmAudio && !this.bgmAudio.paused) return;
+                if (!this.bgmAudio) {
+                    this.bgmAudio = new Audio('coffeemorning.mp3?v=1');
+                    this.bgmAudio.loop = true;
+                    this.bgmAudio.volume = 0.4;
                 }
-
-                // 使用本地 MP3 文件
-                this.bgmAudio = new Audio('coffeemorning.mp3');
-                this.bgmAudio.loop = true;
-                this.bgmAudio.volume = 0.4;
-                this.bgmAudio.play().catch(e => console.log('BGM autoplay blocked:', e));
+                this.bgmAudio.play().catch(() => {});
             },
 
             stopBGM() {
-                if (this.bgmAudio) {
-                    this.bgmAudio.pause();
-                    this.bgmAudio.src = ''; // 彻底释放音频
-                    this.bgmAudio = null;
-                }
+                if (this.bgmAudio) this.bgmAudio.pause();
             },
 
             toggleBGM() {
                 const toggle = document.getElementById('bgmToggle');
-                // 延迟获取状态，确保 checkbox 已经更新
-                setTimeout(() => {
-                    this.bgmEnabled = toggle.checked;
-                    localStorage.setItem('bgmEnabled', this.bgmEnabled);
-                    console.log('BGM toggled:', this.bgmEnabled);
-
-                    if (this.bgmEnabled) {
-                        this.startBGM();
-                    } else {
-                        this.stopBGM();
-                    }
-                }, 0);
+                this.bgmEnabled = toggle.checked;
+                localStorage.setItem('bgmEnabled', this.bgmEnabled);
+                this.bgmEnabled ? this.startBGM() : this.stopBGM();
             }
         };
 
