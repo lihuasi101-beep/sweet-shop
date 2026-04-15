@@ -2964,9 +2964,6 @@
                 const savedBgm = localStorage.getItem('bgmEnabled');
                 if (savedBgm !== null) this.bgmEnabled = savedBgm === 'true';
                 document.getElementById('bgmToggle').checked = this.bgmEnabled;
-
-                // 自动播放BGM
-                if (this.bgmEnabled) this.startBGM();
             },
 
             play(type) {
@@ -3059,6 +3056,11 @@
         // ============ 初始化 ============
         function init() {
             AudioManager.init(); // 初始化音效
+            // 首次用户交互后启用BGM（解决浏览器自动播放限制）
+            document.addEventListener('click', function startBGMOnInteract() {
+                document.removeEventListener('click', startBGMOnInteract);
+                if (AudioManager.bgmEnabled) AudioManager.startBGM();
+            }, { once: true });
             renderSeats();
             renderMenu();
             renderUpgrades();
