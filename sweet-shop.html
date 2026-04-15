@@ -2312,7 +2312,7 @@
         <!-- 状态栏 -->
     <div class="status-bar">
         <div class="status-left">
-            <h1>甜蜜时光 <small>v0.9.6</small></h1>
+            <h1>甜蜜时光 <small>v0.9.7</small></h1>
         </div>
         <div class="status-right">
             <div class="stats">
@@ -2953,6 +2953,7 @@
             bgmEnabled: true,
             ctx: null,
             bgmInterval: null,
+            bgmAudio: null,
 
             init() {
                 // 从 localStorage 读取设置
@@ -3024,42 +3025,21 @@
             },
 
             startBGM() {
-                if (!this.bgmEnabled || !this.ctx) {
-                    if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    if (!this.bgmEnabled) return;
+                if (!this.bgmEnabled) return;
+
+                // 使用本地 MP3 文件
+                if (!this.bgmAudio) {
+                    this.bgmAudio = new Audio('coffeemorning.mp3');
+                    this.bgmAudio.loop = true;
+                    this.bgmAudio.volume = 0.4;
                 }
-
-                const ctx = this.ctx;
-
-                // 柔和的循环背景音（简单的C大和弦循环）
-                const playChord = () => {
-                    if (!this.bgmEnabled || !ctx) return;
-
-                    const chordFreqs = [262, 330, 392]; // C4, E4, G4 和弦
-                    chordFreqs.forEach(freq => {
-                        const osc = ctx.createOscillator();
-                        const gain = ctx.createGain();
-                        osc.type = 'sine';
-                        osc.frequency.value = freq;
-                        gain.gain.setValueAtTime(0, ctx.currentTime);
-                        gain.gain.linearRampToValueAtTime(0.025, ctx.currentTime + 0.5);
-                        gain.gain.linearRampToValueAtTime(0.025, ctx.currentTime + 3.5);
-                        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 4);
-                        osc.connect(gain);
-                        gain.connect(ctx.destination);
-                        osc.start();
-                        osc.stop(ctx.currentTime + 4);
-                    });
-                };
-
-                playChord();
-                this.bgmInterval = setInterval(playChord, 4000);
+                this.bgmAudio.play().catch(e => console.log('BGM autoplay blocked:', e));
             },
 
             stopBGM() {
-                if (this.bgmInterval) {
-                    clearInterval(this.bgmInterval);
-                    this.bgmInterval = null;
+                if (this.bgmAudio) {
+                    this.bgmAudio.pause();
+                    this.bgmAudio.currentTime = 0;
                 }
             },
 
