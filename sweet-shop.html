@@ -2478,6 +2478,13 @@
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
+                        <div class="toggle-row">
+                            <span class="toggle-label">背景音乐</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="bgmToggle" checked onchange="toggleBGM()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
                     </div>
                     <div class="settings-section">
                         <h3 class="settings-title">🎮 难度选择</h3>
@@ -2943,13 +2950,22 @@
         // ============ 音效管理器 ============
         const AudioManager = {
             enabled: true,
+            bgmEnabled: true,
             ctx: null,
+            bgmInterval: null,
 
             init() {
                 // 从 localStorage 读取设置
-                const saved = localStorage.getItem('soundEnabled');
-                if (saved !== null) this.enabled = saved === 'true';
+                const savedSound = localStorage.getItem('soundEnabled');
+                if (savedSound !== null) this.enabled = savedSound === 'true';
                 document.getElementById('soundToggle').checked = this.enabled;
+
+                const savedBgm = localStorage.getItem('bgmEnabled');
+                if (savedBgm !== null) this.bgmEnabled = savedBgm === 'true';
+                document.getElementById('bgmToggle').checked = this.bgmEnabled;
+
+                // 自动播放BGM
+                if (this.bgmEnabled) this.startBGM();
             },
 
             play(type) {
@@ -3005,12 +3021,67 @@
                     osc.start(now);
                     osc.stop(now + 0.2);
                 }
+            },
+
+            startBGM() {
+                if (!this.bgmEnabled || !this.ctx) {
+                    if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (!this.bgmEnabled) return;
+                }
+
+                const ctx = this.ctx;
+
+                // 柔和的循环背景音（简单的C大和弦循环）
+                const playChord = () => {
+                    if (!this.bgmEnabled || !ctx) return;
+
+                    const chordFreqs = [262, 330, 392]; // C4, E4, G4 和弦
+                    chordFreqs.forEach(freq => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0, ctx.currentTime);
+                        gain.gain.linearRampToValueAtTime(0.025, ctx.currentTime + 0.5);
+                        gain.gain.linearRampToValueAtTime(0.025, ctx.currentTime + 3.5);
+                        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 4);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 4);
+                    });
+                };
+
+                playChord();
+                this.bgmInterval = setInterval(playChord, 4000);
+            },
+
+            stopBGM() {
+                if (this.bgmInterval) {
+                    clearInterval(this.bgmInterval);
+                    this.bgmInterval = null;
+                }
+            },
+
+            toggleBGM() {
+                this.bgmEnabled = document.getElementById('bgmToggle').checked;
+                localStorage.setItem('bgmEnabled', this.bgmEnabled);
+
+                if (this.bgmEnabled) {
+                    this.startBGM();
+                } else {
+                    this.stopBGM();
+                }
             }
         };
 
         function toggleSound() {
             AudioManager.enabled = document.getElementById('soundToggle').checked;
             localStorage.setItem('soundEnabled', AudioManager.enabled);
+        }
+
+        function toggleBGM() {
+            AudioManager.toggleBGM();
         }
 
         // ============ 初始化 ============
