@@ -2747,6 +2747,7 @@
 
         /** 从指定槽读档 */
         function loadFromSlot(slot) {
+            if (AudioManager.bgmEnabled) AudioManager.startBGM();
             const data = getSaveData(slot);
             if (!data) { showNotification('该槽位没有存档', true); return; }
 
@@ -2926,16 +2927,19 @@
         function continueLatestSave() {
             const slot = parseInt(document.getElementById('startContinueBtn').dataset.slot);
             document.getElementById('startModalOverlay').classList.remove('open');
+            if (AudioManager.bgmEnabled) AudioManager.startBGM();
             loadFromSlot(slot);
         }
 
         function openOtherSavesFromStart() {
             document.getElementById('startModalOverlay').classList.remove('open');
+            if (AudioManager.bgmEnabled) AudioManager.startBGM();
             openSaveModal();
         }
 
         function startNewGameFromModal() {
             document.getElementById('startModalOverlay').classList.remove('open');
+            if (AudioManager.bgmEnabled) AudioManager.startBGM();
             // 新游戏不读档，直接用初始 gameData
         }
 
@@ -3056,9 +3060,16 @@
         // ============ 初始化 ============
         function init() {
             AudioManager.init(); // 初始化音效
-            // 首次用户交互后启用BGM（解决浏览器自动播放限制）
+            // 全局监听首次用户交互 → 解锁BGM（解决浏览器自动播放限制）
+            window._bgmUnlocked = false;
             document.addEventListener('click', function startBGMOnInteract() {
-                document.removeEventListener('click', startBGMOnInteract);
+                if (window._bgmUnlocked) return;
+                window._bgmUnlocked = true;
+                if (AudioManager.bgmEnabled) AudioManager.startBGM();
+            }, { once: true });
+            document.addEventListener('touchstart', function startBGMOnInteract() {
+                if (window._bgmUnlocked) return;
+                window._bgmUnlocked = true;
                 if (AudioManager.bgmEnabled) AudioManager.startBGM();
             }, { once: true });
             renderSeats();
