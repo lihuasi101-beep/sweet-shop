@@ -2312,7 +2312,7 @@
         <!-- 状态栏 -->
     <div class="status-bar">
         <div class="status-left">
-            <h1>甜蜜时光 <small>v0.9.7</small></h1>
+            <h1>甜蜜时光 <small>v0.9.8</small></h1>
         </div>
         <div class="status-right">
             <div class="stats">
@@ -2481,7 +2481,7 @@
                         <div class="toggle-row">
                             <span class="toggle-label">背景音乐</span>
                             <label class="toggle-switch">
-                                <input type="checkbox" id="bgmToggle" checked onchange="toggleBGM()">
+                                <input type="checkbox" id="bgmToggle" checked onclick="toggleBGM()">
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -3027,31 +3027,41 @@
             startBGM() {
                 if (!this.bgmEnabled) return;
 
-                // 使用本地 MP3 文件
-                if (!this.bgmAudio) {
-                    this.bgmAudio = new Audio('coffeemorning.mp3');
-                    this.bgmAudio.loop = true;
-                    this.bgmAudio.volume = 0.4;
+                // 如果已经在播放，先停止
+                if (this.bgmAudio) {
+                    this.bgmAudio.pause();
+                    this.bgmAudio = null;
                 }
+
+                // 使用本地 MP3 文件
+                this.bgmAudio = new Audio('coffeemorning.mp3');
+                this.bgmAudio.loop = true;
+                this.bgmAudio.volume = 0.4;
                 this.bgmAudio.play().catch(e => console.log('BGM autoplay blocked:', e));
             },
 
             stopBGM() {
                 if (this.bgmAudio) {
                     this.bgmAudio.pause();
-                    this.bgmAudio.currentTime = 0;
+                    this.bgmAudio.src = ''; // 彻底释放音频
+                    this.bgmAudio = null;
                 }
             },
 
             toggleBGM() {
-                this.bgmEnabled = document.getElementById('bgmToggle').checked;
-                localStorage.setItem('bgmEnabled', this.bgmEnabled);
+                const toggle = document.getElementById('bgmToggle');
+                // 延迟获取状态，确保 checkbox 已经更新
+                setTimeout(() => {
+                    this.bgmEnabled = toggle.checked;
+                    localStorage.setItem('bgmEnabled', this.bgmEnabled);
+                    console.log('BGM toggled:', this.bgmEnabled);
 
-                if (this.bgmEnabled) {
-                    this.startBGM();
-                } else {
-                    this.stopBGM();
-                }
+                    if (this.bgmEnabled) {
+                        this.startBGM();
+                    } else {
+                        this.stopBGM();
+                    }
+                }, 0);
             }
         };
 
