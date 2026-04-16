@@ -2908,14 +2908,18 @@
         }
 
         /** 启动存档检测（页面加载时调用） */
-        function checkSaveOnStart() {
+        function checkSaveOnStart(onNewPlayer) {
             let latestSlot = null;
             let latestTime = 0;
             for (let s = 1; s <= TOTAL_SLOTS; s++) {
                 const d = getSaveData(s);
                 if (d && d.timestamp > latestTime) { latestTime = d.timestamp; latestSlot = s; }
             }
-            if (!latestSlot) return; // 没有任何存档，直接开始新游戏
+            if (!latestSlot) {
+                // 没有任何存档 → 新游戏 → 启动引导
+                if (onNewPlayer) onNewPlayer();
+                return;
+            }
 
             const info = slotDisplayInfo(latestSlot);
             document.getElementById('startModalSaveName').textContent = info.name;
@@ -3095,16 +3099,16 @@
             if (savedSlot && savedSlot >= 1 && savedSlot <= TOTAL_SLOTS) lastUsedSlot = savedSlot;
 
             // 启动存档检测弹窗
-            checkSaveOnStart();
+            checkSaveOnStart(() => {
+                // 无存档 → 新游戏 → 启动引导
+                initGuide();
+            });
 
             // 启动自动存档
             startAutoSave();
 
             // 渲染设置Tab存档区
             renderSaveSlots();
-
-            // 启动新手引导（首次进入）
-            initGuide();
         }
 
         // ============ 座位渲染 ============
@@ -4234,9 +4238,16 @@
         let guideOverlay, guideTooltip, guideHighlight;
         let guideSavedFood = null; // 保存引导前的菜品选择状态
 
+        function hasAnySave() {
+            for (let s = 1; s <= TOTAL_SLOTS; s++) {
+                if (getSaveData(s)) return true;
+            }
+            return false;
+        }
+
         function initGuide() {
             if (localStorage.getItem(GUIDE_KEY)) return;
-
+            // 已有存档的老玩家不会走到这里（由 checkSaveOnStart 的回调控制）
             // 创建引导元素
             guideOverlay = document.createElement('div');
             guideOverlay.id = 'guide-overlay';
