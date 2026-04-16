@@ -1035,6 +1035,61 @@
             box-shadow: 0 8px 30px rgba(108,99,255,0.4), 0 4px 10px rgba(0,0,0,0.1);
         }
 
+        /* ===== 新手引导弹窗 ===== */
+        .guide-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .guide-modal.open { display: flex; }
+        .guide-modal-box {
+            background: linear-gradient(135deg, #FFF8F0 0%, #FFF0E6 100%);
+            border-radius: 20px;
+            padding: 28px 32px 24px;
+            max-width: 340px;
+            width: 90%;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            border: 3px solid #FFD700;
+            text-align: center;
+        }
+        .guide-modal-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #FF69B4;
+            margin-bottom: 18px;
+        }
+        .guide-modal-content {
+            text-align: left;
+            margin-bottom: 16px;
+        }
+        .guide-item {
+            font-size: 15px;
+            color: #5D4037;
+            line-height: 2;
+            padding-left: 8px;
+        }
+        .guide-modal-footer {
+            font-size: 13px;
+            color: #FF9999;
+            margin-bottom: 16px;
+        }
+        .guide-modal-btn {
+            background: linear-gradient(135deg, #FF85A2 0%, #FF4D88 100%);
+            color: white;
+            border: none;
+            padding: 10px 36px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255,77,136,0.4);
+        }
+        .guide-modal-btn:active { transform: scale(0.96); }
+
         /* ===== 存档按钮 ===== */
         .save-btn {
             grid-column: 3;
@@ -2314,7 +2369,7 @@
         <!-- 状态栏 -->
     <div class="status-bar">
         <div class="status-left">
-            <h1>甜蜜时光 <small>v1.0</small></h1>
+            <h1>甜蜜时光 <small>v1.0.1</small></h1>
         </div>
         <div class="status-right">
             <div class="stats">
@@ -2393,6 +2448,21 @@
                 <button class="start-modal-btn secondary" onclick="openOtherSavesFromStart()">📂 选择其他存档</button>
                 <button class="start-modal-btn new-game" onclick="startNewGameFromModal()">🆕 开始新游戏</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 新手引导弹窗 -->
+    <div class="guide-modal" id="guideModal">
+        <div class="guide-modal-box">
+            <div class="guide-modal-title">🍰 新手指南</div>
+            <div class="guide-modal-content">
+                <div class="guide-item">🍰 从底部菜单选择菜品</div>
+                <div class="guide-item">👆 点击座位服务顾客</div>
+                <div class="guide-item">👥 可以雇佣员工帮你自动服务</div>
+                <div class="guide-item">⬆️ 用赚的金币升级店铺</div>
+            </div>
+            <div class="guide-modal-footer">祝你的甜品店生意兴隆！</div>
+            <button class="guide-modal-btn" onclick="closeGuide()">知道了</button>
         </div>
     </div>
 
@@ -4195,62 +4265,8 @@
         // ============ 启动游戏 ============
         window.onload = init;
 
-        // ============ 新手引导系统 ============
+        // ============ 新手引导系统（简化版） ============
         const GUIDE_KEY = 'sweetshop_guide_done';
-        const guideSteps = [
-            {
-                id: 'welcome',
-                title: '🎉 欢迎来到甜蜜时光！',
-                content: '这是你的甜品店！顾客会陆续到来，你需要为他们提供满意的服务。',
-                target: null,
-                position: 'center'
-            },
-            {
-                id: 'select-food',
-                title: '🍰 第一步：选择菜品',
-                content: '点击底部的「菜单」Tab，选中顾客想要的菜品。注意：每个顾客想要的不一样哦！',
-                target: '#tab-menu',
-                position: 'bottom'
-            },
-            {
-                id: 'serve-customer',
-                title: '👆 第二步：服务顾客',
-                content: '选好菜品后，点击有订单气泡的座位上菜。如果上错菜，顾客会不开心的！',
-                target: '.seat',
-                position: 'top'
-            },
-            {
-                id: 'employee',
-                title: '👥 第三步：雇佣员工（可选）',
-                content: '点击「雇员」Tab 可以雇佣员工帮你自动服务。雇佣后你可以腾出更多时间做其他事情~',
-                target: '#tab-employee',
-                position: 'bottom'
-            },
-            {
-                id: 'upgrade',
-                title: '⬆️ 第四步：升级店铺',
-                content: '点击「升级」Tab 可以升级座位容量、顾客速度、小费加成等。赚更多金币，扩大你的甜品帝国！',
-                target: '#tab-upgrade',
-                position: 'bottom'
-            },
-            {
-                id: 'complete',
-                title: '🌟 准备就绪！',
-                content: '你已经掌握了基本操作！祝你的甜品店生意兴隆~ 💕',
-                target: null,
-                position: 'center'
-            }
-        ];
-        let currentGuideStep = -1;
-        let guideOverlay, guideTooltip, guideHighlight;
-        let guideSavedFood = null; // 保存引导前的菜品选择状态
-
-        function hasAnySave() {
-            for (let s = 1; s <= TOTAL_SLOTS; s++) {
-                if (getSaveData(s)) return true;
-            }
-            return false;
-        }
 
         function initGuide() {
             try {
@@ -4258,128 +4274,12 @@
             } catch (e) {
                 // 无痕模式下 localStorage 不可用，正常继续引导
             }
-            // 已有存档的老玩家不会走到这里（由 checkSaveOnStart 的回调控制）
-            // 创建引导元素
-            guideOverlay = document.createElement('div');
-            guideOverlay.id = 'guide-overlay';
-            guideOverlay.style.cssText = `
-                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                background: rgba(0,0,0,0.6); z-index: 9990;
-                display: flex; align-items: center; justify-content: center;
-                opacity: 0; transition: opacity 0.3s;
-            `;
-            document.body.appendChild(guideOverlay);
-
-            guideTooltip = document.createElement('div');
-            guideTooltip.id = 'guide-tooltip';
-            guideTooltip.style.cssText = `
-                position: fixed; background: linear-gradient(135deg, #FFF8F0 0%, #FFF0E6 100%);
-                border-radius: 20px; padding: 25px 30px; max-width: 320px;
-                box-shadow: 0 15px 50px rgba(0,0,0,0.3); z-index: 9991;
-                border: 3px solid #FFD700; text-align: center;
-                transform: scale(0.8); opacity: 0; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            `;
-            document.body.appendChild(guideTooltip);
-
-            // 开始引导
-            setTimeout(() => showGuideStep(0), 800);
+            document.getElementById('guideModal').classList.add('open');
         }
 
-        function showGuideStep(stepIndex) {
-            if (stepIndex >= guideSteps.length) {
-                completeGuide();
-                return;
-            }
-
-            currentGuideStep = stepIndex;
-            const step = guideSteps[stepIndex];
-
-            // 更新提示框内容
-            guideTooltip.innerHTML = `
-                <div style="font-size: 22px; margin-bottom: 12px; font-weight: bold; color: #FF69B4;">${step.title}</div>
-                <div style="font-size: 14px; color: #5D4037; line-height: 1.6; margin-bottom: 18px;">${step.content}</div>
-                <button onclick="nextGuideStep()" style="
-                    background: linear-gradient(135deg, #FF85A2 0%, #FF4D88 100%);
-                    color: white; border: none; padding: 10px 30px; border-radius: 25px;
-                    font-size: 14px; font-weight: bold; cursor: pointer;
-                    box-shadow: 0 4px 15px rgba(255,77,136,0.4);
-                ">${stepIndex === 0 ? '开始引导' : stepIndex === guideSteps.length - 1 ? '开始游戏！' : '下一步'}</button>
-                ${stepIndex > 0 && stepIndex < guideSteps.length - 1 ? '<br><br><a href="javascript:completeGuide()" style="color: #999; font-size: 12px; text-decoration: underline;">跳过引导</a>' : ''}
-            `;
-
-            // 定位
-            if (step.target) {
-                guideTooltip.style.top = '';
-                guideTooltip.style.left = '';
-                guideTooltip.style.bottom = '';
-                guideTooltip.style.right = '';
-                guideTooltip.style.transform = 'scale(0.8)';
-
-                setTimeout(() => {
-                    const target = document.querySelector(step.target);
-                    if (!target) {
-                        guideTooltip.style.top = '50%';
-                        guideTooltip.style.left = '50%';
-                        guideTooltip.style.transform = 'translate(-50%, -50%) scale(1)';
-                        guideTooltip.style.opacity = '1';
-                        guideOverlay.style.opacity = '1';
-                        return;
-                    }
-
-                    const rect = target.getBoundingClientRect();
-                    const tooltipRect = guideTooltip.getBoundingClientRect();
-
-                    // 根据位置调整
-                    switch (step.position) {
-                        case 'bottom':
-                            guideTooltip.style.top = (rect.bottom + 15) + 'px';
-                            guideTooltip.style.left = Math.max(10, rect.left + rect.width / 2 - 160) + 'px';
-                            break;
-                        case 'top':
-                            guideTooltip.style.bottom = (window.innerHeight - rect.top + 15) + 'px';
-                            guideTooltip.style.left = Math.max(10, rect.left + rect.width / 2 - 160) + 'px';
-                            break;
-                    }
-
-                    guideTooltip.style.transform = 'scale(1)';
-                    guideTooltip.style.opacity = '1';
-                    guideOverlay.style.opacity = '1';
-
-                    // 自动切换到对应Tab
-                    if (step.target.startsWith('#tab-') || step.target.startsWith('#employeeList')) {
-                        const tabId = step.target.replace('#', '');
-                        switchTab(tabId);
-                    }
-                }, 100);
-            } else {
-                // 居中显示
-                setTimeout(() => {
-                    guideTooltip.style.top = '50%';
-                    guideTooltip.style.left = '50%';
-                    guideTooltip.style.transform = 'translate(-50%, -50%) scale(1)';
-                    guideTooltip.style.opacity = '1';
-                    guideOverlay.style.opacity = '1';
-                }, 100);
-            }
-        }
-
-        function nextGuideStep() {
-            // 如果是从"选择菜品"步骤过来，先帮用户选个默认菜品作为演示
-            if (currentGuideStep === 1 && !gameData.selectedFood) {
-                selectFood('cake');
-            }
-            showGuideStep(currentGuideStep + 1);
-        }
-
-        function completeGuide() {
+        function closeGuide() {
+            document.getElementById('guideModal').classList.remove('open');
             try { localStorage.setItem(GUIDE_KEY, 'true'); } catch (e) {}
-            if (guideOverlay) guideOverlay.style.opacity = '0';
-            if (guideOverlay) guideOverlay.style.opacity = '0';
-            if (guideTooltip) guideTooltip.style.opacity = '0';
-            setTimeout(() => {
-                if (guideOverlay) guideOverlay.remove();
-                if (guideTooltip) guideTooltip.remove();
-            }, 300);
         }
     </script>
 </body>
