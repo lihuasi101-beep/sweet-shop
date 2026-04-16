@@ -2572,27 +2572,27 @@
             pendingCustomer: null, // 待补位的座位（成就弹窗期间）
             achievementQueue: [], // 待领取成就队列（最多3个）
             difficultySettings: {
-                easy: { multiplier: 1.5, label: '简单', emoji: '😊' },
-                normal: { multiplier: 1.0, label: '普通', emoji: '🤔' },
-                hard: { multiplier: 0.6, label: '困难', emoji: '😰' }
+                easy: { multiplier: 1.0, label: '简单', emoji: '😊' },
+                normal: { multiplier: 0.85, label: '普通', emoji: '🤔' },
+                hard: { multiplier: 0.7, label: '困难', emoji: '😰' }
             },
             menuItems: [
-                { id: 'cake', emoji: '🍰', name: '奶油蛋糕', price: 15, unlocked: true, minLevel: 1 },
-                { id: 'icecream', emoji: '🍦', name: '冰淇淋', price: 10, unlocked: true, minLevel: 1 },
-                { id: 'cookie', emoji: '🍪', name: '曲奇饼干', price: 8, unlocked: true, minLevel: 1 },
-                { id: 'macaron', emoji: '🧁', name: '马卡龙', price: 20, unlocked: false, minLevel: 2 },
-                { id: 'pudding', emoji: '🍮', name: '布丁', price: 18, unlocked: false, minLevel: 2 },
-                { id: 'milkshake', emoji: '🥛', name: '奶昔', price: 22, unlocked: false, minLevel: 3 },
-                { id: 'tart', emoji: '🥧', name: '水果挞', price: 25, unlocked: false, minLevel: 4 },
-                { id: 'parfait', emoji: '🍓', name: '草莓圣代', price: 30, unlocked: false, minLevel: 5 }
+                { id: 'cake', emoji: '🍰', name: '奶油蛋糕', price: 18, unlocked: true, minLevel: 1 },
+                { id: 'icecream', emoji: '🍦', name: '冰淇淋', price: 12, unlocked: true, minLevel: 1 },
+                { id: 'cookie', emoji: '🍪', name: '曲奇饼干', price: 10, unlocked: true, minLevel: 1 },
+                { id: 'macaron', emoji: '🧁', name: '马卡龙', price: 25, unlocked: false, minLevel: 2 },
+                { id: 'pudding', emoji: '🍮', name: '布丁', price: 22, unlocked: false, minLevel: 2 },
+                { id: 'milkshake', emoji: '🥛', name: '奶昔', price: 28, unlocked: false, minLevel: 3 },
+                { id: 'tart', emoji: '🥧', name: '水果挞', price: 32, unlocked: false, minLevel: 4 },
+                { id: 'parfait', emoji: '🍓', name: '草莓圣代', price: 40, unlocked: false, minLevel: 5 }
             ],
             upgrades: [
-                { id: 'capacity', emoji: '🪑', name: '增加座位', desc: '+1 座位容量', cost: 100, maxLevel: 5, currentLevel: 0 },
-                { id: 'customerRate', emoji: '📈', name: '吸引顾客', desc: '顾客来得更快', cost: 150, maxLevel: 5, currentLevel: 0 },
-                { id: 'tipRate', emoji: '💝', name: '小费加成', desc: '+10% 金币收益', cost: 200, maxLevel: 3, currentLevel: 0 },
-                { id: 'patience', emoji: '⏱️', name: '耐心培训', desc: '+3秒等待时间', cost: 180, maxLevel: 3, currentLevel: 0 },
-                { id: 'employeeSpeed', emoji: '🚀', name: '员工效率', desc: '员工服务更快', cost: 250, maxLevel: 3, currentLevel: 0 },
-                { id: 'foodQuality', emoji: '⭐', name: '菜品升级', desc: '+15% 菜品单价', cost: 300, maxLevel: 5, currentLevel: 0 }
+                { id: 'capacity', emoji: '🪑', name: '增加座位', desc: '+1 座位容量', cost: 60, maxLevel: 5, currentLevel: 0 },
+                { id: 'customerRate', emoji: '📈', name: '吸引顾客', desc: '顾客来得更快', cost: 80, maxLevel: 5, currentLevel: 0 },
+                { id: 'tipRate', emoji: '💝', name: '小费加成', desc: '+10% 金币收益', cost: 100, maxLevel: 3, currentLevel: 0 },
+                { id: 'patience', emoji: '⏱️', name: '耐心培训', desc: '+3秒等待时间', cost: 90, maxLevel: 3, currentLevel: 0 },
+                { id: 'employeeSpeed', emoji: '🚀', name: '员工效率', desc: '员工服务更快', cost: 120, maxLevel: 3, currentLevel: 0 },
+                { id: 'foodQuality', emoji: '⭐', name: '菜品升级', desc: '+15% 菜品单价', cost: 150, maxLevel: 5, currentLevel: 0 }
             ],
             customerAvatars: ['😊', '🙂', '😄', '🥰', '😋', '🤗', '😎', '🧐', '👩', '👨', '👧', '👦', '🧑', '👵', '👴'],
             angryAvatars: ['😠', '😤', '😡', '🤬', '💢'],
@@ -2670,9 +2670,9 @@
 
             // 根据难度显示不同的提示
             const difficultyMessages = {
-                easy: '轻松愉快，好好赚钱~ 🌸',
-                normal: '保持节奏，别让顾客等太久~ ⭐',
-                hard: '挑战极限，你能行！💪'
+                easy: '轻松愉快，慢慢赚钱~ 🌸',
+                normal: '节奏适中，享受挑战~ ⭐',
+                hard: '极限挑战，证明实力！💪'
             };
 
             showNotification(`${gameData.difficultySettings[diff].emoji} 已切换到${gameData.difficultySettings[diff].label}模式！${difficultyMessages[diff]}`);
@@ -3102,6 +3102,9 @@
 
             // 渲染设置Tab存档区
             renderSaveSlots();
+
+            // 启动新手引导（首次进入）
+            initGuide();
         }
 
         // ============ 座位渲染 ============
@@ -4180,6 +4183,181 @@
 
         // ============ 启动游戏 ============
         window.onload = init;
+
+        // ============ 新手引导系统 ============
+        const GUIDE_KEY = 'sweetshop_guide_done';
+        const guideSteps = [
+            {
+                id: 'welcome',
+                title: '🎉 欢迎来到甜蜜时光！',
+                content: '这是你的甜品店！顾客会陆续到来，你需要为他们提供满意的服务。',
+                target: null,
+                position: 'center'
+            },
+            {
+                id: 'select-food',
+                title: '🍰 第一步：选择菜品',
+                content: '点击底部的「菜单」Tab，选中顾客想要的菜品。注意：每个顾客想要的不一样哦！',
+                target: '#tab-menu',
+                position: 'bottom'
+            },
+            {
+                id: 'serve-customer',
+                title: '👆 第二步：服务顾客',
+                content: '选好菜品后，点击有订单气泡的座位上菜。如果上错菜，顾客会不开心的！',
+                target: '.seat',
+                position: 'top'
+            },
+            {
+                id: 'employee',
+                title: '👥 第三步：雇佣员工（可选）',
+                content: '点击「雇员」Tab 可以雇佣员工帮你自动服务。雇佣后你可以腾出更多时间做其他事情~',
+                target: '#tab-employee',
+                position: 'bottom'
+            },
+            {
+                id: 'upgrade',
+                title: '⬆️ 第四步：升级店铺',
+                content: '点击「升级」Tab 可以升级座位容量、顾客速度、小费加成等。赚更多金币，扩大你的甜品帝国！',
+                target: '#tab-upgrade',
+                position: 'bottom'
+            },
+            {
+                id: 'complete',
+                title: '🌟 准备就绪！',
+                content: '你已经掌握了基本操作！祝你的甜品店生意兴隆~ 💕',
+                target: null,
+                position: 'center'
+            }
+        ];
+        let currentGuideStep = -1;
+        let guideOverlay, guideTooltip, guideHighlight;
+        let guideSavedFood = null; // 保存引导前的菜品选择状态
+
+        function initGuide() {
+            if (localStorage.getItem(GUIDE_KEY)) return;
+
+            // 创建引导元素
+            guideOverlay = document.createElement('div');
+            guideOverlay.id = 'guide-overlay';
+            guideOverlay.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.6); z-index: 9990;
+                display: flex; align-items: center; justify-content: center;
+                opacity: 0; transition: opacity 0.3s;
+            `;
+            document.body.appendChild(guideOverlay);
+
+            guideTooltip = document.createElement('div');
+            guideTooltip.id = 'guide-tooltip';
+            guideTooltip.style.cssText = `
+                position: fixed; background: linear-gradient(135deg, #FFF8F0 0%, #FFF0E6 100%);
+                border-radius: 20px; padding: 25px 30px; max-width: 320px;
+                box-shadow: 0 15px 50px rgba(0,0,0,0.3); z-index: 9991;
+                border: 3px solid #FFD700; text-align: center;
+                transform: scale(0.8); opacity: 0; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            `;
+            document.body.appendChild(guideTooltip);
+
+            // 开始引导
+            setTimeout(() => showGuideStep(0), 800);
+        }
+
+        function showGuideStep(stepIndex) {
+            if (stepIndex >= guideSteps.length) {
+                completeGuide();
+                return;
+            }
+
+            currentGuideStep = stepIndex;
+            const step = guideSteps[stepIndex];
+
+            // 更新提示框内容
+            guideTooltip.innerHTML = `
+                <div style="font-size: 22px; margin-bottom: 12px; font-weight: bold; color: #FF69B4;">${step.title}</div>
+                <div style="font-size: 14px; color: #5D4037; line-height: 1.6; margin-bottom: 18px;">${step.content}</div>
+                <button onclick="nextGuideStep()" style="
+                    background: linear-gradient(135deg, #FF85A2 0%, #FF4D88 100%);
+                    color: white; border: none; padding: 10px 30px; border-radius: 25px;
+                    font-size: 14px; font-weight: bold; cursor: pointer;
+                    box-shadow: 0 4px 15px rgba(255,77,136,0.4);
+                ">${stepIndex === 0 ? '开始引导' : stepIndex === guideSteps.length - 1 ? '开始游戏！' : '下一步'}</button>
+                ${stepIndex > 0 && stepIndex < guideSteps.length - 1 ? '<br><br><a href="javascript:completeGuide()" style="color: #999; font-size: 12px; text-decoration: underline;">跳过引导</a>' : ''}
+            `;
+
+            // 定位
+            if (step.target) {
+                guideTooltip.style.top = '';
+                guideTooltip.style.left = '';
+                guideTooltip.style.bottom = '';
+                guideTooltip.style.right = '';
+                guideTooltip.style.transform = 'scale(0.8)';
+
+                setTimeout(() => {
+                    const target = document.querySelector(step.target);
+                    if (!target) {
+                        guideTooltip.style.top = '50%';
+                        guideTooltip.style.left = '50%';
+                        guideTooltip.style.transform = 'translate(-50%, -50%) scale(1)';
+                        guideTooltip.style.opacity = '1';
+                        guideOverlay.style.opacity = '1';
+                        return;
+                    }
+
+                    const rect = target.getBoundingClientRect();
+                    const tooltipRect = guideTooltip.getBoundingClientRect();
+
+                    // 根据位置调整
+                    switch (step.position) {
+                        case 'bottom':
+                            guideTooltip.style.top = (rect.bottom + 15) + 'px';
+                            guideTooltip.style.left = Math.max(10, rect.left + rect.width / 2 - 160) + 'px';
+                            break;
+                        case 'top':
+                            guideTooltip.style.bottom = (window.innerHeight - rect.top + 15) + 'px';
+                            guideTooltip.style.left = Math.max(10, rect.left + rect.width / 2 - 160) + 'px';
+                            break;
+                    }
+
+                    guideTooltip.style.transform = 'scale(1)';
+                    guideTooltip.style.opacity = '1';
+                    guideOverlay.style.opacity = '1';
+
+                    // 自动切换到对应Tab
+                    if (step.target.startsWith('#tab-') || step.target.startsWith('#employeeList')) {
+                        const tabId = step.target.replace('#', '');
+                        switchTab(tabId);
+                    }
+                }, 100);
+            } else {
+                // 居中显示
+                setTimeout(() => {
+                    guideTooltip.style.top = '50%';
+                    guideTooltip.style.left = '50%';
+                    guideTooltip.style.transform = 'translate(-50%, -50%) scale(1)';
+                    guideTooltip.style.opacity = '1';
+                    guideOverlay.style.opacity = '1';
+                }, 100);
+            }
+        }
+
+        function nextGuideStep() {
+            // 如果是从"选择菜品"步骤过来，先帮用户选个默认菜品作为演示
+            if (currentGuideStep === 1 && !gameData.selectedFood) {
+                selectFood('cake');
+            }
+            showGuideStep(currentGuideStep + 1);
+        }
+
+        function completeGuide() {
+            localStorage.setItem(GUIDE_KEY, 'true');
+            if (guideOverlay) guideOverlay.style.opacity = '0';
+            if (guideTooltip) guideTooltip.style.opacity = '0';
+            setTimeout(() => {
+                if (guideOverlay) guideOverlay.remove();
+                if (guideTooltip) guideTooltip.remove();
+            }, 300);
+        }
     </script>
 </body>
 </html>
