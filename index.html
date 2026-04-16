@@ -2379,8 +2379,8 @@
     <div class="start-modal-overlay" id="startModalOverlay">
         <div class="start-modal">
             <div class="start-modal-icon">🍰</div>
-            <div class="start-modal-title">欢迎回来！</div>
-            <div class="start-modal-desc">检测到你的存档，是否继续上次的游戏？</div>
+            <div class="start-modal-title" id="startModalTitle">欢迎回来！</div>
+            <div class="start-modal-desc" id="startModalDesc">检测到你的存档，是否继续上次的游戏？</div>
             <div class="start-modal-latest" id="startModalLatest">
                 <div class="start-modal-latest-label">📌 最近存档</div>
                 <div class="start-modal-latest-name" id="startModalSaveName">—</div>
@@ -2908,7 +2908,7 @@
         }
 
         /** 启动存档检测（页面加载时调用） */
-        function checkSaveOnStart(onNewPlayer) {
+        function checkSaveOnStart() {
             let latestSlot = null;
             let latestTime = 0;
             for (let s = 1; s <= TOTAL_SLOTS; s++) {
@@ -2916,10 +2916,24 @@
                 if (d && d.timestamp > latestTime) { latestTime = d.timestamp; latestSlot = s; }
             }
             if (!latestSlot) {
-                // 没有任何存档 → 新游戏 → 启动引导
-                if (onNewPlayer) onNewPlayer();
+                // 新玩家：显示欢迎弹窗，点击"开始游戏"触发引导
+                document.getElementById('startModalTitle').textContent = '欢迎来到甜蜜时光！';
+                document.getElementById('startModalDesc').textContent = '准备好经营你的甜品店了吗？';
+                document.getElementById('startModalLatest').style.display = 'none';
+                document.getElementById('startContinueBtn').style.display = 'none';
+                document.getElementById('startModalOverlay').classList.add('open');
                 return;
             }
+            // 有存档：显示最近存档信息（老玩家）
+            document.getElementById('startModalTitle').textContent = '欢迎回来！';
+            document.getElementById('startModalDesc').textContent = '检测到你的存档，是否继续上次的游戏？';
+            const info = slotDisplayInfo(latestSlot);
+            document.getElementById('startModalLatest').style.display = '';
+            document.getElementById('startContinueBtn').style.display = '';
+            document.getElementById('startModalLatest').querySelector('.start-modal-latest-name').textContent = info.name;
+            document.getElementById('startContinueBtn').dataset.slot = latestSlot;
+            document.getElementById('startModalOverlay').classList.add('open');
+        }
 
             const info = slotDisplayInfo(latestSlot);
             document.getElementById('startModalSaveName').textContent = info.name;
@@ -2944,7 +2958,8 @@
         function startNewGameFromModal() {
             document.getElementById('startModalOverlay').classList.remove('open');
             if (AudioManager.bgmEnabled) AudioManager.startBGM();
-            // 新游戏不读档，直接用初始 gameData
+            // 启动新手引导
+            initGuide();
         }
 
         /** 启动自动存档（每60秒） */
@@ -3099,10 +3114,7 @@
             if (savedSlot && savedSlot >= 1 && savedSlot <= TOTAL_SLOTS) lastUsedSlot = savedSlot;
 
             // 启动存档检测弹窗
-            checkSaveOnStart(() => {
-                // 无存档 → 新游戏 → 启动引导
-                initGuide();
-            });
+            checkSaveOnStart();
 
             // 启动自动存档
             startAutoSave();
