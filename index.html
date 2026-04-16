@@ -1834,17 +1834,18 @@
             /* 游戏容器 - 垂直布局 */
             .game-container {
                 flex-direction: column;
-                height: auto;
-                min-height: calc(100vh - 45px);
+                height: 100dvh; /* 使用动态视口高度，解决移动端地址栏问题 */
+                min-height: 0; /* 允许flex子元素收缩 */
             }
 
             /* 店铺场景 - 上半部分 */
             .shop-area {
                 flex: 1;
                 padding: 6px;
-                min-height: 45vh;
+                min-height: 0; /* 允许收缩 */
                 display: flex;
                 flex-direction: column;
+                overflow: hidden; /* 防止内容溢出 */
             }
 
             .shop-title {
@@ -1860,6 +1861,7 @@
                 display: flex;
                 flex-direction: column;
                 position: relative;
+                height: 100%; /* 为绝对定位的座位提供高度参考 */
             }
 
             /* 座位 */
@@ -2931,13 +2933,6 @@
             document.getElementById('startModalLatest').style.display = '';
             document.getElementById('startContinueBtn').style.display = '';
             document.getElementById('startModalLatest').querySelector('.start-modal-latest-name').textContent = info.name;
-            document.getElementById('startContinueBtn').dataset.slot = latestSlot;
-            document.getElementById('startModalOverlay').classList.add('open');
-        }
-
-            const info = slotDisplayInfo(latestSlot);
-            document.getElementById('startModalSaveName').textContent = info.name;
-            document.getElementById('startModalSaveMeta').textContent = info.meta;
             document.getElementById('startContinueBtn').dataset.slot = latestSlot;
             document.getElementById('startModalOverlay').classList.add('open');
         }
@@ -4258,7 +4253,11 @@
         }
 
         function initGuide() {
-            if (localStorage.getItem(GUIDE_KEY)) return;
+            try {
+                if (localStorage.getItem(GUIDE_KEY)) return;
+            } catch (e) {
+                // 无痕模式下 localStorage 不可用，正常继续引导
+            }
             // 已有存档的老玩家不会走到这里（由 checkSaveOnStart 的回调控制）
             // 创建引导元素
             guideOverlay = document.createElement('div');
@@ -4373,7 +4372,8 @@
         }
 
         function completeGuide() {
-            localStorage.setItem(GUIDE_KEY, 'true');
+            try { localStorage.setItem(GUIDE_KEY, 'true'); } catch (e) {}
+            if (guideOverlay) guideOverlay.style.opacity = '0';
             if (guideOverlay) guideOverlay.style.opacity = '0';
             if (guideTooltip) guideTooltip.style.opacity = '0';
             setTimeout(() => {
